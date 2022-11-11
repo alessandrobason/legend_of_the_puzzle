@@ -90,6 +90,8 @@ struct TRect {
     template<typename Q>
     TRect(const TRect<Q> &v) : x((T)v.x), y((T)v.y), w((T)v.w), h((T)v.h) {}
 
+    vec2 centre() const { return pos + size / (T)2; }
+
     TRect operator+(const TRect &v) const { return { x + v.x, y + v.y, w + v.w, h + v.h }; }
     TRect operator-(const TRect &v) const { return { x - v.x, y - v.y, w - v.w, h - v.h }; }
     TRect operator*(const TRect &v) const { return { x * v.x, y * v.y, w * v.w, h * v.h }; }

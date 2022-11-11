@@ -5,7 +5,7 @@
 // #include "Interactables/Statue.h"
 // #include "Interactables/ManInteractable.h"
 #include "Player.h"
-// #include "GameObjects/Octorock.h"
+#include "GameObjects/Octorock.h"
 // #include "GameObjects/ManObject.h"
 
 class Map_room : public Room {

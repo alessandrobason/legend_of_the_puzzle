@@ -163,8 +163,6 @@ void Player::handleInput(float dt) {
         vel.x = (float)(IsKeyDown(KeyRight) - IsKeyDown(KeyLeft));
         vel.y = (float)(IsKeyDown(KeyDown)  - IsKeyDown(KeyUp));
 
-        printf("vel: %.3f %.3f\n", vel.x, vel.y);
-
         vec2 mousepos = roommanager->getMousePos();
         vec2 center = animSprite.sprite.pos + local_center;
 

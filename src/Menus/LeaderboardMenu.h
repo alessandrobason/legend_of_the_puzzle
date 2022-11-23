@@ -1,5 +1,5 @@
 #pragma once
-// #include <SFML/Network.hpp>
+#include <SFML/Network.hpp>
 #include "../Framework/Room.h"
 #include "../Framework/GUI/GUImanager.h"
 

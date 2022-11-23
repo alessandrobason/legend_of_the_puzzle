@@ -1,11 +1,10 @@
 #pragma once
 
-#include <raylib.h>
+#include <SFML/Graphics.hpp>
 #include <iostream>
 #include <vector>
 #include "Collision.h"
 #include "Animation.h"
-#include "../maths.h"
 
 class Tilemap {
 public:
@@ -26,32 +25,26 @@ public:
 		std::vector<data> frames;
 	};
 
-	// void setWindow(sf::RenderWindow* w);
+	void setWindow(sf::RenderWindow* w);
 
-	void setTexture(const Texture &t);
-	Texture* getTexture() { return &m_tileset; }
+	void setTexture(sf::Texture* t);
+	sf::Texture* getTexture() { return &m_tileset; }
 
-	bool load(bool* d, Image& t, const std::vector<animated_tiles_data> &animData, std::vector<int>& tiles, const tilemap_data &tilemapdata, vec2 offset);
-	bool loadCollisions(std::vector<Collision> &&collisions);
+	bool load(bool* d, sf::Image* t, std::vector <animated_tiles_data> animData, std::vector<int>& tiles, tilemap_data tilemapdata, vec2 offset);
+	bool loadCollisions(std::vector<Collision> collisions);
 
 	void draw();
 	void animate(float dt);
 	void drawDebug();
-	void setShader(Shader s);
+	void setShader(sf::Shader s);
 
 	tilemap_data getData() { return m_tilemap; }
-	// sf::RenderStates getStates() { return states; }
-	// vec2 getPosition() { return vec2(states.transform.getMatrix()[12], states.transform.getMatrix()[1]); }
+	sf::RenderStates getStates() { return states; }
+	vec2 getPosition() { return vec2(states.transform.getMatrix()[12], states.transform.getMatrix()[1]); }
 
-	// void setStates(sf::RenderStates s) { states = s; }
-
-	// void resetAnimation() { animatedTiles.reset(); }
+	void setStates(sf::RenderStates s) { states = s; }
 
 	std::vector<Collision> collisions;
-
-	~Tilemap() {
-		UnloadTexture(m_tileset);
-	}
 
 private:
 	struct TileAnimated {
@@ -61,14 +54,16 @@ private:
 		TileAnimated(int anim_id, vec2 pos) : anim_id(anim_id), pos(pos) {}
 	};
 
-	Texture m_tileset;
+	sf::Texture m_tileset;
 	tilemap_data m_tilemap;
 	std::vector<int> m_tiles;
-	std::vector<TileAnimated> m_animated_tiles;
+	std::vector<TileAnimated> animatedTiles;
 	std::vector<AnimatedTile> m_tile_animations;
 	vec2 m_offset;
 
-	// sf::RenderStates states;
+	// tilemap_data data;
+	sf::RenderStates states;
+	sf::RenderWindow* window;
 
 	bool* isdebug = nullptr;
 };

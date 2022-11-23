@@ -1,9 +1,9 @@
 #include "Player.h"
 #include "Framework/RoomManager.h"
 
-Player::Player() : GameObject(nullptr){}
+Player::Player() : GameObject(nullptr, nullptr, nullptr){}
 
-Player::Player(RoomManager* rm) : GameObject(rm){
+Player::Player(InputHandler* input, RoomManager* rm, sf::RenderWindow* win) : GameObject(input, rm, win){
     collisionlayer = Collision::LAYER::PLAYER;
 
     // load player data from json
@@ -21,14 +21,16 @@ Player::Player(RoomManager* rm) : GameObject(rm){
     float h = (float)json_collision["height"].i;
     collider = Collision(x, y, w, h, collisionlayer);
 
-
     auto &json_spritesheet = config->doc["spritesheet"].obj;
     int rows = json_spritesheet["rows"].i;
     int columns = json_spritesheet["columns"].i;
 
+    if (!roommanager->textures["player"].loadFromFile(config->doc["spritesheet"].obj["image"].str)) {
+        std::cout << "Failed to load " << config->doc["spritesheet"].str << "\n";
+    }
+
     // animated sprite
-    Texture player_tex = roommanager->loadTexture("player", config->doc["spritesheet"].obj["image"].str.c_str());
-    animSprite.init(player_tex, columns);
+    animSprite.setSpriteSheet(&roommanager->textures["player"], columns, rows);
 
     auto &json_animations = config->doc["animations"].arr;
     for (auto &anim : json_animations) {
@@ -39,55 +41,57 @@ Player::Player(RoomManager* rm) : GameObject(rm){
             animFrames.emplace_back(frame.i);
         }
         auto &anim_name = anim.obj["name"].str;
-        if (anim_name == "death") {
-            death_anim_id = animSprite.addAnimation(anim_name, std::move(animFrames), speed, looping);
-        }
-        else {
-            animSprite.addAnimation(anim_name, std::move(animFrames), speed, looping);
-        }
+        animSprite.addAnimation(anim_name, std::move(animFrames), speed, looping);
     }
+    animSprite.setCurrentAnimation("idle up-left");
 
-    animSprite.play("idle up-left");
-
-    local_center = collider.collision_offset + collider.box.size / 2.f;
+    local_center = collider.collision_offset + vec2(collider.rect.width / 2, collider.rect.height / 2);
     
     // LOAD WEAPONs
-    auto &json_weapon = config->doc["weapons"].obj;
-    Texture weapon_tex = roommanager->loadTexture("weapons", json_weapon["spritesheet"].str.c_str());
+    if (!roommanager->textures["weapons"].loadFromFile(config->doc["weapons"].obj["spritesheet"].str)) {
+        std::cout << "Failed to load weapons texture from " << config->doc["weapons"].obj["spritesheet"].str << "\n";
+    }
 
-    auto &json_bow = json_weapon["bow"].obj["texture coordinates"].arr;
-    vec2i bow_texture_coordinates { json_bow[0].i, json_bow[1].i };
-    // bow = Weapon(&roommanager->textures["weapons"], bow_texture_coordinates, in, collisionlayer, roommanager);
+    vec2i bow_texture_coordinates;
+    bow_texture_coordinates.x = config->doc["weapons"].obj["bow"].obj["texture coordinates"].arr[0].i;
+    bow_texture_coordinates.y = config->doc["weapons"].obj["bow"].obj["texture coordinates"].arr[1].i;
+    bow = Weapon(&roommanager->textures["weapons"], bow_texture_coordinates, in, collisionlayer, roommanager);
 
-    auto &json_hitbox = json_weapon["arrow"].obj["hitbox"].arr;
-    // bow.setHitBox({json_hitbox[0].i, json_hitbox[1].i, json_hitbox[2].i, json_hitbox[3].i});
-    playerdata.basedamage = (float)json_weapon["bow"].obj["base_damage"].d;
-    // bow.setDamage(playerdata.basedamage);
+    rectf arrowhitbox;
+    arrowhitbox.top = (float)config->doc["weapons"].obj["arrow"].obj["hitbox"].arr[0].i;
+    arrowhitbox.left = (float)config->doc["weapons"].obj["arrow"].obj["hitbox"].arr[1].i;
+    arrowhitbox.width = (float)config->doc["weapons"].obj["arrow"].obj["hitbox"].arr[2].i;
+    arrowhitbox.height = (float)config->doc["weapons"].obj["arrow"].obj["hitbox"].arr[3].i;
+    bow.setHitBox(arrowhitbox);
+    playerdata.basedamage = (float)config->doc["weapons"].obj["bow"].obj["base_damage"].d;
+    bow.setDamage(playerdata.basedamage);
 
     // CHECKBOX
     checkboxsize = vec2(300, 300);
     checkbox = Collision(-checkboxsize.x / 2.f, -checkboxsize.y / 2.f, checkboxsize.x / 2.f, checkboxsize.y / 2.f, Collision::LAYER::PLAYER);
-    checkbox.setDebugColor(YELLOW);
+    checkbox.setDebugColor(sf::Color::Yellow);
 
     // PLAYER GUI
     playerdata.expneeded = nextLevelExp(playerdata.level);
-    Texture playerbar_tex = roommanager->loadTexture("playerbar", "Assets/lifeexpbar.png");
-
-    // roommanager->getPlayerGui()->setBarTexture(&roommanager->textures["playerbar"]);
-    // roommanager->getPlayerGui()->setTotalLife(playerdata.totallife);
-    // roommanager->getPlayerGui()->setNextLevelExp(playerdata.expneeded);
+    if (!roommanager->textures["playerbar"].loadFromFile("Assets/lifeexpbar.png")) {
+        std::cout << "Couldn't load player bar texture\n";
+        abort();
+    }
+    roommanager->getPlayerGui()->setBarTexture(&roommanager->textures["playerbar"]);
+    roommanager->getPlayerGui()->setTotalLife(playerdata.totallife);
+    roommanager->getPlayerGui()->setNextLevelExp(playerdata.expneeded);
 }
 
 void Player::move(vec2 offset) {
     GameObject::move(offset);
-    // bow.move(offset);
+    bow.move(offset);
     checkbox.moveCollision(offset);
 }
 
 void Player::setPosition(vec2 pos) {
-    animSprite.sprite.pos = pos;
-    collider.setPosition(pos + collider.collision_offset);
-    // bow.setPosition(pos + local_center);
+    getSprite()->setPosition(pos);
+    collider.setPosition(vec2(pos.x + collider.collision_offset.x, pos.y + collider.collision_offset.y));
+    bow.setPosition(pos + local_center);
     checkbox.setCenter(pos + local_center);
 }
 
@@ -100,12 +104,12 @@ void Player::hit(float damage) {
     if (playerdata.life <= 0) {
         roommanager->setCurrentState(RoomManager::STATES::GAMEOVER);
         canmove = false;
-        animSprite.play("death");
+        animSprite.setCurrentAnimation("death");
         return;
     }
     flashing.isflashing = true;
 
-    // roommanager->getPlayerGui()->updateLifeValue(playerdata.life);
+    roommanager->getPlayerGui()->updateLifeValue(playerdata.life);
 }
 
 void Player::giveExp(float e) {
@@ -115,28 +119,28 @@ void Player::giveExp(float e) {
         roommanager->playSound("level-up");
 
         float remain = playerdata.exp - playerdata.expneeded;
-        // roommanager->getPlayerGui()->updateExpValue(playerdata.expneeded);
+        roommanager->getPlayerGui()->updateExpValue(playerdata.expneeded);
         playerdata.exp = remain;
-        // roommanager->getPlayerGui()->remainExpValue(remain);
+        roommanager->getPlayerGui()->remainExpValue(remain);
 
         levelUp();
     }
     else {
-        // roommanager->getPlayerGui()->updateExpValue(playerdata.exp);
+        roommanager->getPlayerGui()->updateExpValue(playerdata.exp);
     }
 }
 
 void Player::levelUp() {
     playerdata.level++;
     playerdata.expneeded = nextLevelExp(playerdata.level);
-    // roommanager->getPlayerGui()->setNextLevelExp(playerdata.expneeded);
+    roommanager->getPlayerGui()->setNextLevelExp(playerdata.expneeded);
 
     playerdata.totallife += playerdata.baselife;
     playerdata.life = playerdata.totallife;
-    // roommanager->getPlayerGui()->setTotalLife(playerdata.totallife);
-    // roommanager->getPlayerGui()->updateLifeValue(playerdata.life);
+    roommanager->getPlayerGui()->setTotalLife(playerdata.totallife);
+    roommanager->getPlayerGui()->updateLifeValue(playerdata.life);
     
-    // bow.setDamage(bow.getDamage() + 2.5f * playerdata.level);
+    bow.setDamage(bow.getDamage() + 2.5f * playerdata.level);
 }
 
 float Player::nextLevelExp(int level) {
@@ -148,11 +152,11 @@ void Player::reset() {
     playerdata.exp = 0.f;
     playerdata.totallife = playerdata.baselife;
     playerdata.life = playerdata.baselife;
-    // bow.setDamage(playerdata.basedamage);
+    bow.setDamage(playerdata.basedamage);
     playerdata.expneeded = nextLevelExp(playerdata.level);
-    // roommanager->getPlayerGui()->updateExpValue(playerdata.exp);
-    // roommanager->getPlayerGui()->setNextLevelExp(playerdata.expneeded);
-    animSprite.play("idle up-left");
+    roommanager->getPlayerGui()->updateExpValue(playerdata.exp);
+    roommanager->getPlayerGui()->setNextLevelExp(playerdata.expneeded);
+    getAnimation()->setCurrentAnimation("idle up-left");
 }
 
 void Player::handleInput(float dt) {
@@ -160,16 +164,16 @@ void Player::handleInput(float dt) {
     if (canmove) {
         vel = vec2(0, 0);
 
-        vel.x = (float)(IsKeyDown(KeyRight) - IsKeyDown(KeyLeft));
-        vel.y = (float)(IsKeyDown(KeyDown)  - IsKeyDown(KeyUp));
+        vel.x = (float)(in->isKeyDown(in->KEY_RIGHT) - in->isKeyDown(in->KEY_LEFT));
+        vel.y = (float)(in->isKeyDown(in->KEY_DOWN) - in->isKeyDown(in->KEY_UP));
 
-        vec2 mousepos = roommanager->getMousePos();
-        vec2 center = animSprite.sprite.pos + local_center;
+        vec2 mousepos = in->getMouseRelative();
+        vec2 center = getSprite()->getPosition() + local_center;
 
         center.x = mousepos.x - center.x;
         center.y = mousepos.y - center.y;
-        angle_to_mouse = UsefulFunc::atan2(center.y, center.x) * 180.f / (float)M_PI + 180.f;
-        // bow.setAngle(angle_to_mouse);
+        angle_to_mouse = UsefulFunc::atan2(center.y, center.x) * 180 / (float)M_PI + 180;
+        bow.setAngle(angle_to_mouse);
 
         switch ((int)(angle_to_mouse / 45)) {
         case 0:
@@ -194,8 +198,7 @@ void Player::handleInput(float dt) {
             break;
         }
 
-        vel.normalise();
-        vel *= speed;
+        vel = UsefulFunc::normalize(vel) * speed;
 
         std::string anim = "idle ";
         bool ismoving = vel != vec2(0, 0);
@@ -203,14 +206,15 @@ void Player::handleInput(float dt) {
 
         anim += directionnames[last_direction];
 
-        if (IsKeyPressed(KEY_ESCAPE)) {
-            // roommanager->textures["pausescreenshot"].create(w->getSize().x, w->getSize().y);
+        if (in->isKeyPressed(in->KEY_MENU)) {
+            // roommanager->textures["pausescreenshot"].create(w->getSize());
             // roommanager->textures["pausescreenshot"].update(*w);
+            roommanager->textures["pausescreenshot"].takeScreenshot();
 
             roommanager->moveMenu("pause");
         }
 
-        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && ismoving) {
+        if (in->isMouseRPressed() && ismoving) {
             canmove = false;
             isdodging = true;
             anim = "dodge ";
@@ -224,11 +228,11 @@ void Player::handleInput(float dt) {
             collider.collisionlayer = Collision::LAYER::NONE;
         }
 
-        animSprite.play(anim);
-        // bow.handleInput(dt);
+        animSprite.setCurrentAnimation(anim);
+        bow.handleInput(dt);
     }
     else if (isdodging) {
-        if (!animSprite.playing) {
+        if (!animSprite.getPlaying()) {
             canmove = true;
             isdodging = false;
             collider.collisionlayer = Collision::LAYER::PLAYER;
@@ -236,8 +240,8 @@ void Player::handleInput(float dt) {
     }
 }
 
-bool Player::animationCallback(int anim_id) {
-    if (anim_id == death_anim_id) {
+bool Player::animationCallback(std::string name) {
+    if (name == "death") {
         roommanager->moveMenu("deathscreen");
         return true;
     }
@@ -246,8 +250,8 @@ bool Player::animationCallback(int anim_id) {
 }
 
 void Player::update(float dt) {
-    animSprite.update(dt);
-    // bow.update(dt);
+    animSprite.animate(dt);
+    bow.update(dt);
     if (canmove || isdodging) move(vel * dt);
     if (flashing.isflashing) flash(dt);
 }
@@ -263,24 +267,24 @@ void Player::updateAnimation(float dt) {
 
     std::cout << "anim: " << anim << "\n";
 
-    animSprite.play(anim);
-    animSprite.update(dt);
+    animSprite.setCurrentAnimation(anim);
+    animSprite.animate(dt);
 }
 
 void Player::draw() {
-    // if (!draw_weapon_over && !isdodging) bow.draw();
-    animSprite.draw();
-    // if (draw_weapon_over && !isdodging) bow.draw();
-    // bow.drawArrows(w);
+    if (!draw_weapon_over && !isdodging) w->draw(bow);
+    animSprite.draw(w);
+    if (draw_weapon_over && !isdodging) w->draw(bow);
+    bow.drawArrows(w);
 }
 
 void Player::drawDebug(){
     GameObject::drawDebug();
-    // bow.drawDebug();
-    checkbox.drawDebug();
+    bow.drawDebug(w);
+    checkbox.drawDebug(w);
 }
 
 void Player::setVisible(bool v) {
     GameObject::setVisible(v);
-    // bow.setColor(flashing.color[v]);
+    bow.setColor(flashing.color[v]);
 }

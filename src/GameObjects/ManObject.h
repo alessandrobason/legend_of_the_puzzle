@@ -22,7 +22,7 @@ public:
 
 	void setLastDirection(DIRECTION d) { last_direction = d; }
 
-	sf::Sprite* getSprite() override { return animation.getSprite(); }
+	sf::Sprite* getSprite() override { return &animation.sprite; }
 
 protected:
 

@@ -1,7 +1,6 @@
 #pragma once
-// #include <SFML/Graphics.hpp>
+#include <SFML/Graphics.hpp>
 #include <vector>
-#include <raylib.h>
 #include "../GameObjects/Enemy.h"
 #include "RoomManager.fwd.h"
 #include "Tweening.h"
@@ -20,15 +19,15 @@ class Projectiles {
 	};
 
 	vec2 projectilesize;
-	rect projectilehitbox;
+	rectf projectilehitbox;
 	vec2 orientation = vec2(0, 0);
 
 	float speed = 100.f;
 	float damage = 0.f;
 	vec2 texture_coordinates;
-	Texture texture;
-	// std::vector<sf::Vertex> vertexs;
-	// sf::RenderStates states;
+	std::vector<sf::Vertex> vertexs;
+	//sf::VertexArray vertexs;
+	sf::RenderStates states;
 	// stores all the data of projectiles, its size
 	// should be equal to projectils_vertexs' size / 4
 	std::vector<singleprojectile> projectile_vector;
@@ -44,11 +43,11 @@ class Projectiles {
 public:
 	Projectiles() {}
 
-	Projectiles(Texture txt, vec2i tex_coords, Collision::LAYER l, RoomManager* rm);
+	Projectiles(sf::Texture* txt, vec2i tex_coords, Collision::LAYER l, RoomManager* rm);
 
 	void setGameObjects(std::vector<GameObject*>* g) { gameobjects = g; }
 	void setTilemap(std::vector<Collision*>* t) { tilemapcollisions = t; }
-	void setHitBox(rect hb) { projectilehitbox = hb; }
+	void setHitBox(rectf hb) { projectilehitbox = hb; }
 	void setSize(vec2 s) { projectilesize = s; }
 	void setDamage(float d) { damage = d; }
 	float getDamage() { return damage; }
@@ -56,11 +55,17 @@ public:
 
 	void update(float dt);
 
-	void draw();
-	void drawDebug();
+	void draw(sf::RenderWindow* w) {
+		w->draw(vertexs.data(), vertexs.size(), sf::Quads, states);
+	}
 
-	// void shoot(sf::Transform transform);
-	void shoot(vec2 position, vec2 direction);
+	void drawDebug(sf::RenderWindow* w) {
+		for (size_t i = 0; i < projectile_vector.size(); i++) {
+			projectile_vector[i].collider.drawDebug(w);
+		}
+	}
+
+	void shoot(sf::Transform transform);
 	void removeArrow(size_t n);
 
 	void setSpeed(float s) { speed = s; }

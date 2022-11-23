@@ -1,4 +1,6 @@
 #pragma once
+#include <SFML/Graphics.hpp>
+
 #include "Collision.h"
 #include "RoomManager.fwd.h"
 
@@ -8,7 +10,7 @@ protected:
 
 public:
 	Interactable() {}
-	Interactable(RoomManager* rm, rect c);
+	Interactable(RoomManager* rm, rectf c);
 	Interactable(RoomManager* rm, float x, float y, float w, float h);
 
 	virtual void interact();

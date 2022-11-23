@@ -1,5 +1,8 @@
 #pragma once
 
+#undef min
+#undef max
+
 class UsefulFunc {
 public:
 	// inverse square root from Quake III
@@ -26,5 +29,17 @@ public:
 		if (x < 0) r = (float)M_PI - r;
 		if (y < 0) r = -r;
 		return r;
+	}
+
+	static vec2 normalize(vec2 v) {
+		return v * InvSqrt(magnitude2(v));
+	}
+
+	static float magnitude2(vec2 v) {
+		return v.x * v.x + v.y * v.y;		
+	}
+
+	static float magnitude(vec2 v) {
+		return std::sqrt(v.x * v.x + v.y * v.y);
 	}
 };

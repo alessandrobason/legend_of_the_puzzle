@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <iostream>
-// #include "SFML/Graphics.hpp"
+#include "SFML/Graphics.hpp"
 #include "..\RoomManager.fwd.h"
 #include "..\GameObject.h"
 

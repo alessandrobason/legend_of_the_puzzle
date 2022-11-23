@@ -1,5 +1,5 @@
 #pragma once
-// #include <SFML/Graphics.hpp>
+#include <SFML/Graphics.hpp>
 #include <vector>
 #include <iostream>
 #include <assert.h>
@@ -58,14 +58,14 @@ public:
 
 	virtual void setTexture(sf::Texture* t) { states.texture = t; }
 	virtual void updateTexture() {}
-	void setRect(rect b) { boxrect = b; }
+	void setRect(rectf b) { boxrect = b; }
 
 	virtual void appendQuad(sf::Vertex v, vec2 size);
 
 	void setAlign(ALIGN h, ALIGN v) { horizontal_alignment = h; vertical_alignment = v; }
 	virtual void alignElement();
 	
-	rect getRect() { return boxrect; }
+	rectf getRect() { return boxrect; }
 	CONTROL_STATES getState() { return currentcontrol; }
 
 	void setShader(std::string file, sf::Shader::Type type);
@@ -75,9 +75,18 @@ public:
 protected:
 	GUIelement* parent = nullptr;
 
+	struct Quad {
+		Quad() = default;
+		Quad(const rectf &s, const rectf &d, sf::Color c) : src(s), dst(d), col(c) {}
+		rectf src;
+		rectf dst;
+		sf::Color col;
+	};
+
 	std::vector<sf::Vertex> vertexs;
+	std::vector<Quad> quads;
 	sf::RenderStates states;
-	rect boxrect;
+	rectf boxrect;
 	vec2 elementoffset;
 	CONTROL_STATES currentcontrol = CONTROL_STATES::NONE;
 	ALIGN horizontal_alignment = ALIGN::NONE;

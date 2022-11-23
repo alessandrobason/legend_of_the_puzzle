@@ -132,6 +132,17 @@ typedef struct Vector4 {
 #define RL_VECTOR4_TYPE
 #endif
 
+#if !defined(RL_RECTANGLE_TYPE)
+// Rectangle, 4 components
+typedef struct Rectangle {
+    float x;                
+    float y;                
+    float width;            
+    float height;           
+} Rectangle;
+#define RL_RECTANGLE_TYPE
+#endif
+
 #if !defined(RL_QUATERNION_TYPE)
 // Quaternion type
 typedef Vector4 Quaternion;

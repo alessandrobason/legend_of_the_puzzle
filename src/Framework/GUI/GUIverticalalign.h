@@ -11,19 +11,19 @@ public:
 	void addElement(GUIelement* e) { elements.push_back(e); e->setParent(this); }
 
 	void load() {
-		sf::Vertex v[4];
-		v[0].position = vec2(boxrect.left, boxrect.top);
-		v[1].position = vec2(boxrect.left + boxrect.width, boxrect.top);
-		v[2].position = vec2(boxrect.left + boxrect.width, boxrect.top + boxrect.height);
-		v[3].position = vec2(boxrect.left, boxrect.top + boxrect.height);
-		v[0].color = backgroundcolor;
-		v[1].color = backgroundcolor;
-		v[2].color = backgroundcolor;
-		v[3].color = backgroundcolor;
-		vertexs.push_back(v[0]);
-		vertexs.push_back(v[1]);
-		vertexs.push_back(v[2]);
-		vertexs.push_back(v[3]);
+		// sf::Vertex v[4];
+		// v[0].position = vec2(boxrect.left, boxrect.top);
+		// v[1].position = vec2(boxrect.left + boxrect.width, boxrect.top);
+		// v[2].position = vec2(boxrect.left + boxrect.width, boxrect.top + boxrect.height);
+		// v[3].position = vec2(boxrect.left, boxrect.top + boxrect.height);
+		// v[0].color = backgroundcolor;
+		// v[1].color = backgroundcolor;
+		// v[2].color = backgroundcolor;
+		// v[3].color = backgroundcolor;
+		// vertexs.push_back(v[0]);
+		// vertexs.push_back(v[1]);
+		// vertexs.push_back(v[2]);
+		// vertexs.push_back(v[3]);
 		alignElement();
 	}
 
@@ -48,6 +48,9 @@ public:
 	}
 
 	void draw(sf::RenderWindow* w) override {
-		w->draw(vertexs.data(), vertexs.size(), sf::Quads);
+		sf::RectangleShape r(boxrect);
+		r.setFillColor(backgroundcolor);
+		w->draw(r);
+		// w->draw(vertexs.data(), vertexs.size(), sf::Quads);
 	}
 };

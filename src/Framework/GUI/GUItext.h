@@ -29,11 +29,11 @@ public:
 			abort();
 		}
 		
-		sf::Texture& texture = const_cast<sf::Texture&>(font->getTexture(text.getCharacterSize()));
-		texture.setSmooth(false);
+		// sf::Texture& texture = const_cast<sf::Texture&>(font->getTexture(text.getCharacterSize()));
+		// texture.setSmooth(false);
 
-		boxrect = text.getLocalBounds();
-		std::cout << "Loading text: " << text.getString().toAnsiString() << "\n";
+		// boxrect = text.getLocalBounds();
+		std::cout << "Loading text: " << text.getString().c_str() << "\n";
 		alignElement();
 		update();
 	}
@@ -55,8 +55,8 @@ public:
 	
 	void setCharacterSize(int s) { 
 		text.setCharacterSize(s); 
-		sf::Texture& texture = const_cast<sf::Texture&>(font->getTexture(s));
-		texture.setSmooth(false);
+		// sf::Texture& texture = const_cast<sf::Texture&>(font->getTexture(s));
+		// texture.setSmooth(false);
 		std::cout << "size: " << s << "\n";
 	}
 

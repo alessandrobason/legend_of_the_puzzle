@@ -54,7 +54,6 @@ void GUIbutton::load() {
 	}
 	nineslice();
 	alignElement();
-	
 }
 
 void GUIbutton::changeControlState(CONTROL_STATES newcontrol) {

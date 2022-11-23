@@ -18,37 +18,37 @@ PauseMenu::PauseMenu(sf::RenderWindow* window, InputHandler* input, RoomManager*
 	loadFonts(fontstoload);
 
 	GUIpanel background;
-	background.setRect(rect(0, 0, in->getScreenSize().x, in->getScreenSize().y));
+	background.setRect(rectf(0, 0, in->getScreenSize().x, in->getScreenSize().y));
 	background.setShader("Data/grayscale.frag", sf::Shader::Fragment);
 	background.load();
 
 	GUIverticalalign verticalalign;
 	verticalalign.setParent(&background);
-	verticalalign.setRect(rect(0, 0, 100, 100));
+	verticalalign.setRect(rectf(0, 0, 100, 100));
 	verticalalign.setAlign(GUIelement::ALIGN::CENTER, GUIelement::ALIGN::CENTER);
 	verticalalign.load();
 
 	GUIbutton options = loadButton("options");
 	options.setParent(&verticalalign);
-	options.setRect(rect(0, 0, 64, 24));
+	options.setRect(rectf(0, 0, 64, 24));
 	options.setText(&roommanager->fonts["font"], "options");
 	options.load();
 
 	GUIbutton controls = loadButton("controls");
 	controls.setParent(&verticalalign);
-	controls.setRect(rect(0, 0, 64, 24));
+	controls.setRect(rectf(0, 0, 64, 24));
 	controls.setText(&roommanager->fonts["font"], "controls");
 	controls.load();
 
 	GUIbutton mainmenu = loadButton("mainmenu");
 	mainmenu.setParent(&verticalalign);
-	mainmenu.setRect(rect(0, 0, 64, 24));
+	mainmenu.setRect(rectf(0, 0, 64, 24));
 	mainmenu.setText(&roommanager->fonts["font"], "main menu");
 	mainmenu.load();
 
 	GUIbutton back = loadButton("back");
 	back.setParent(&verticalalign);
-	back.setRect(rect(0, 0, 64, 24));
+	back.setRect(rectf(0, 0, 64, 24));
 	back.setText(&roommanager->fonts["font"], "back");
 	back.load();
 
@@ -75,7 +75,7 @@ void PauseMenu::start() {
 		vec2 actualcamerasize = (vec2)w->getSize();
 		vec2 camerasize = vec2(viewsize.x * actualcamerasize.x / actualviewsize.x, viewsize.y * actualcamerasize.y / actualviewsize.y);
 		vec2 offset = camerasize - viewsize;
-		elements[0]->setRect(rect(-offset.x / 2, -offset.y / 2, in->getScreenSize().x + offset.x, in->getScreenSize().y + offset.y));
+		elements[0]->setRect(rectf(-offset.x / 2, -offset.y / 2, in->getScreenSize().x + offset.x, in->getScreenSize().y + offset.y));
 	}
 
 	elements[0]->updateTexture(); 
@@ -84,7 +84,7 @@ void PauseMenu::start() {
 void PauseMenu::update(float dt) {
 	main_camera.setViewport(Room::in->getView().getViewport());
 	Room::w->setView(main_camera);
-	if (in->isKeyPressed(sf::Keyboard::Escape)) {
+	if (in->isKeyPressed(in->KEY_MENU)) {
 		roommanager->moveMenu("game");
 	}
 }

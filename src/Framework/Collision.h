@@ -1,19 +1,15 @@
 #pragma once
+#include <SFML/Graphics.hpp>
 #define _USE_MATH_DEFINES
 #include <math.h>
-
-#include <raylib.h>
-
-#include "../maths.h"
 
 class Collision {
 private:
 	bool isenabled = true;
 
-	rect debug;
-	Color color;
+	sf::RectangleShape debug;
 
-	void setupDebugBox(rect r);
+	void setupDebugBox(rectf r);
 	
 	struct IntCircle {
 		vec2i pos;
@@ -31,7 +27,7 @@ public:
 	};
 	
 	Collision();
-	Collision(rect r, LAYER type);
+	Collision(rectf r, LAYER type);
 	Collision(float x, float y, float w, float h, LAYER type);
 
 	~Collision();
@@ -41,22 +37,22 @@ public:
 	void disable() { isenabled = false; }
 	bool isEnabled() { return isenabled; }
 
-	void setDebugPosition(vec2 pos) { debug.pos = pos; }
-	void setDebugSize(vec2 size) { debug.size = size; }
-	void setDebugColor(Color c) { color = c; }
+	void setDebugPosition(vec2 pos) { debug.setPosition(pos); }
+	void setDebugSize(vec2 size) { debug.setSize(size); }
+	void setDebugColor(sf::Color c) { debug.setOutlineColor(c); }
 
-	bool Check_Collision(rect r);
+	bool Check_Collision(rectf r);
 
 	void setPosition(vec2 pos);
 	void setCenter(vec2 c);
 	void moveCollision(vec2 mov);
 	
-	vec2 getCollisionSide(rect r, vec2& oldVel);
+	vec2 getCollisionSide(rectf r, vec2& oldVel);
 
-	void drawDebug();
+	void drawDebug(sf::RenderWindow* w);
 
 	LAYER collisionlayer;
-	rect box;
+	rectf rect;
 	vec2 collision_offset;
 	IntCircle circle;
 };

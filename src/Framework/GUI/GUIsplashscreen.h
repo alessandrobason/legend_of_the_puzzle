@@ -12,12 +12,13 @@ class GUIsplashscreen : public GUIpanel {
 public:
 
 	void setQuadPosition(int i, vec2 p) {
-		float w = (float)states.texture->getSize().x;
-		float h = (float)states.texture->getSize().y;
-		vertexs[i].position = p;
-		vertexs[i + 1].position = p + vec2(w, 0);
-		vertexs[i + 2].position = p + vec2(w, h);
-		vertexs[i + 3].position = p + vec2(0, h);
+		quads[i/4].dst.pos = p;
+		// float w = (float)states.texture->getSize().x;
+		// float h = (float)states.texture->getSize().y;
+		// vertexs[i].position = p;
+		// vertexs[i + 1].position = p + vec2(w, 0);
+		// vertexs[i + 2].position = p + vec2(w, h);
+		// vertexs[i + 3].position = p + vec2(0, h);
 	}
 
 	void load() {

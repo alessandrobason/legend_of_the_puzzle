@@ -6,6 +6,7 @@ GUIelement::GUIelement(const GUIelement& copy) {
 	zbuffer = copy.zbuffer;
 	enabled = copy.enabled;
 	vertexs = copy.vertexs;
+	quads = copy.quads;
 	states = copy.states;
 	boxrect = copy.boxrect;
 	currentcontrol = copy.currentcontrol;
@@ -14,7 +15,18 @@ GUIelement::GUIelement(const GUIelement& copy) {
 }
 
 void GUIelement::draw(sf::RenderWindow* w) {
-	w->draw(vertexs.data(), vertexs.size(), sf::Quads, states);
+	for (Quad &q : quads) {
+		vec2 pos = boxrect.pos + q.dst.pos;
+
+		rl::DrawTexturePro(
+			states.texture ? states.texture->m_tex : rl::Texture{0},
+			q.src,
+			rectf(pos, q.dst.size),
+			vec2(0, 0),
+			0.f,
+			q.col
+		);
+	}
 }
 
 void GUIelement::setPosition(vec2 pos) {
@@ -59,6 +71,22 @@ void GUIelement::alignElement() {
 }
 
 void GUIelement::appendQuad(sf::Vertex v, vec2 size) {
+	if (states.texture) {
+		quads.emplace_back(
+			rectf(v.texCoords, states.texture->getSize()), 
+			rectf(v.position, size), 
+			v.color
+		);
+	}
+	else {
+		quads.emplace_back(
+			rectf(0, 0, 0, 0), 
+			rectf(v.position, size), 
+			backgroundcolor
+		);
+	}
+
+	return;
 	vec2 coords = v.position;
 	vec2 positionoffset[4] = {
 		vec2(0, 0),
@@ -70,8 +98,8 @@ void GUIelement::appendQuad(sf::Vertex v, vec2 size) {
 	vec2 textureoffset[4] = { vec2() };
 
 	if (states.texture) {
-		int w = states.texture->getSize().x;
-		int h = states.texture->getSize().y;
+		float w = (float)states.texture->getSize().x;
+		float h = (float)states.texture->getSize().y;
 		textureoffset[0] = vec2(0, 0);
 		textureoffset[1] = vec2(w, 0);
 		textureoffset[2] = vec2(w, h);

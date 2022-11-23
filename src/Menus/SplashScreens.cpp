@@ -1,7 +1,10 @@
 #include "SplashScreens.h"
 #include "../Framework/RoomManager.h"
 
-SplashScreens::SplashScreens(sf::RenderWindow* window, InputHandler* input, RoomManager* rm) : Room("MainScreen", window, input, rm), GUImanager(window, input, rm) {
+SplashScreens::SplashScreens(sf::RenderWindow* window, InputHandler* input, RoomManager* rm) 
+	: Room("MainScreen", window, input, rm), 
+	  GUImanager(window, input, rm) 
+{
 	main_camera.setCenter(Room::in->getScreenSize() / 2.f);
 	Room::w->setView(main_camera);
 
@@ -13,14 +16,14 @@ SplashScreens::SplashScreens(sf::RenderWindow* window, InputHandler* input, Room
 	loadFonts(fontstoload);
 
 	GUIpanel mainpanel;
-	mainpanel.setRect(rect(0, 0, Room::in->getScreenSize().x, Room::in->getScreenSize().y));
+	mainpanel.setRect(rectf(0, 0, Room::in->getScreenSize().x, Room::in->getScreenSize().y));
 	mainpanel.setBackgroundColor(sf::Color::Black);
 	mainpanel.load();
 
 	GUIsplashscreen splashscreen;
 	splashscreen.setParent(&mainpanel);
 	splashscreen.setTexture(&Room::roommanager->textures["splashscreen"]);
-	splashscreen.setRect(rect(0, 0, 64, 64));
+	splashscreen.setRect(rectf(0, 0, 64, 64));
 	splashscreen.setAlign(GUIelement::ALIGN::CENTER, GUIelement::ALIGN::CENTER);
 	splashscreen.load();
 

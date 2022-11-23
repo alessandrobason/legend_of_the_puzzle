@@ -1,7 +1,7 @@
 #include "Interactable.h"
 #include "RoomManager.h"
 
-Interactable::Interactable(RoomManager* rm, rect c) : Collision(c, LAYER::ALL) {
+Interactable::Interactable(RoomManager* rm, rectf c) : Collision(c, LAYER::ALL) {
 	roommanager = rm;
 }
 

@@ -1,5 +1,6 @@
 #include "ManInteractable.h"
 #include "../Framework/RoomManager.h"
+#include "../Framework/EventManager.h"
 
 void ManInteractable::interact() {
 	// look at player
@@ -18,20 +19,20 @@ void ManInteractable::interact() {
 	if (roommanager->foundAllPieces()) {
 		/////////////////
 		input.dialog.push_back("Thank you, bye bitch.");
-		roommanager->eventmanager.addEvent(EventManager::EventType::SAY, input);
+		// roommanager->eventmanager.addEvent(EventManager::EventType::SAY, input);
 		/////////////////
 		input.cameramovement.push_back({ vec2(0, -112), 3.f });
-		roommanager->eventmanager.addEvent(EventManager::EventType::MOVETO, input);
+		// roommanager->eventmanager.addEvent(EventManager::EventType::MOVETO, input);
 		/////////////////
 		input.time = 3.f;
 		input.fadesong = true;
-		roommanager->eventmanager.addEvent(EventManager::EventType::FADE, input);
+		// roommanager->eventmanager.addEvent(EventManager::EventType::FADE, input);
 		/////////////////
 		input.menu = "ending";
-		roommanager->eventmanager.addEvent(EventManager::EventType::MENU, input);
+		// roommanager->eventmanager.addEvent(EventManager::EventType::MENU, input);
 	}
 	else {
 		input.dialog.push_back("Then what are you\ndoing here?");
-		roommanager->eventmanager.addEvent(EventManager::EventType::SAY, input);
+		// roommanager->eventmanager.addEvent(EventManager::EventType::SAY, input);
 	}
 }

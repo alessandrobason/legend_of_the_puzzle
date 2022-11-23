@@ -25,13 +25,13 @@ DebugMenu::DebugMenu(sf::RenderWindow* window, InputHandler* input, RoomManager*
 
 	GUIbox background;
 	background.setTexture(&roommanager->textures["guiboxwbg"]);
-	background.setRect(rect(0, 0, in->getScreenSize().x, in->getScreenSize().y));
+	background.setRect(rectf(0, 0, in->getScreenSize().x, in->getScreenSize().y));
 	background.setTileSize(16);
 	background.load();
 
 	GUIverticalalign verticalalign;
 	verticalalign.setParent(&background);
-	verticalalign.setRect(rect(0, 0, 100, 100));
+	verticalalign.setRect(rectf(0, 0, 100, 100));
 	verticalalign.setAlign(GUIelement::ALIGN::CENTER, GUIelement::ALIGN::CENTER);
 	verticalalign.load();
 
@@ -41,7 +41,7 @@ DebugMenu::DebugMenu(sf::RenderWindow* window, InputHandler* input, RoomManager*
 
 	GUIhorizontalalign showdebughoralign;
 	showdebughoralign.setParent(&verticalalign);
-	showdebughoralign.setRect(rect(0, 0, 100, 10));
+	showdebughoralign.setRect(rectf(0, 0, 100, 10));
 	showdebughoralign.load();
 
 	GUItext showdebuglabel;
@@ -68,7 +68,7 @@ DebugMenu::DebugMenu(sf::RenderWindow* window, InputHandler* input, RoomManager*
 
 	GUIhorizontalalign godmodehoralign;
 	godmodehoralign.setParent(&verticalalign);
-	godmodehoralign.setRect(rect(0, 0, 100, 10));
+	godmodehoralign.setRect(rectf(0, 0, 100, 10));
 	godmodehoralign.load();
 
 	GUItext godmodelabel;
@@ -94,7 +94,7 @@ DebugMenu::DebugMenu(sf::RenderWindow* window, InputHandler* input, RoomManager*
 
 	GUIhorizontalalign wallshoralign;
 	wallshoralign.setParent(&verticalalign);
-	wallshoralign.setRect(rect(0, 0, 100, 10));
+	wallshoralign.setRect(rectf(0, 0, 100, 10));
 	wallshoralign.load();
 
 	GUItext wallslabel;
@@ -121,7 +121,7 @@ DebugMenu::DebugMenu(sf::RenderWindow* window, InputHandler* input, RoomManager*
 	getpuzzlepieces.setId("puzzle");
 	getpuzzlepieces.setParent(&verticalalign);
 	getpuzzlepieces.setTexture(&roommanager->textures["guibutton"]);
-	getpuzzlepieces.setRect(rect(0, 0, 110, 24));
+	getpuzzlepieces.setRect(rectf(0, 0, 110, 24));
 	getpuzzlepieces.setText(&roommanager->fonts["font"], "get all puzzle pieces");
 	getpuzzlepieces.setNormalTexture(&roommanager->textures["guibutton"]);
 	getpuzzlepieces.setHoverTexture(&roommanager->textures["guibuttonhover"]);
@@ -138,7 +138,7 @@ DebugMenu::DebugMenu(sf::RenderWindow* window, InputHandler* input, RoomManager*
 	backbutton.setId("back");
 	backbutton.setParent(&verticalalign);
 	backbutton.setTexture(&roommanager->textures["guibutton"]);
-	backbutton.setRect(rect(0, 0, 64, 24));
+	backbutton.setRect(rectf(0, 0, 64, 24));
 	backbutton.setText(&roommanager->fonts["font"], "go back");
 	backbutton.setNormalTexture(&roommanager->textures["guibutton"]);
 	backbutton.setHoverTexture(&roommanager->textures["guibuttonhover"]);

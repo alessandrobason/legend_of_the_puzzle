@@ -1,5 +1,5 @@
 #pragma once
-// #include <SFML/Graphics.hpp>
+#include <SFML/Graphics.hpp>
 #include <iostream>
 #include <vector>
 #include "InputHandler.h"
@@ -12,7 +12,7 @@ needs to have:
 - rotation pointer
 */ 
 
-class Weapon : public sf::Sprite{
+class Weapon : public sf::Sprite {
 public:
 	Weapon() {}
 	Weapon(sf::Texture* txt, vec2i tex_coords, InputHandler* i, Collision::LAYER l, RoomManager* rm);
@@ -27,7 +27,7 @@ public:
 	void setTilemap(std::vector<Collision*>* t) { projectiles.setTilemap(t); }
 	void setAngle(float ang) { angle_to_mouse = ang; }
 	void setCollisionArray(std::vector<Collision*>* c) {}
-	void setHitBox(rect hb) { projectiles.setHitBox(hb); }
+	void setHitBox(rectf hb) { projectiles.setHitBox(hb); }
 	void setDamage(float d) { projectiles.setDamage(d); }
 	float getDamage() { return projectiles.getDamage(); }
 

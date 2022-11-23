@@ -17,14 +17,14 @@ TextBox::TextBox(RoomManager* rm, InputHandler* input) {
 	}
 	text.setFont(roommanager->fonts["boxfont"]);
 	text.setCharacterSize(16);
-	sf::Texture& t = const_cast<sf::Texture&>(roommanager->fonts["boxfont"].getTexture(text.getCharacterSize()));
-	t.setSmooth(false);
+	// sf::Texture& t = const_cast<sf::Texture&>(roommanager->fonts["boxfont"].getTexture(text.getCharacterSize()));
+	// t.setSmooth(false);
 
 	tilesize = 8;
-	boxrect = rect(0, 104, 160, 40);
+	boxrect = rectf(0, 104, 160, 40);
 	nineslice();
 
-	text.setPosition(boxrect.left + 8, boxrect.top);
+	text.setPosition({ boxrect.left + 8, boxrect.top });
 	text.setFillColor(sf::Color::Black);
 }
 

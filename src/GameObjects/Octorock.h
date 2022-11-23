@@ -17,6 +17,6 @@ public:
 
 	void Advance() override;
 	void hit(float damage) override;
-	bool animationCallback(int anim_id) override;
+	bool animationCallback(std::string name) override;
 };
 

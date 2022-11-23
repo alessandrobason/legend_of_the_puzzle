@@ -3,10 +3,6 @@
 JSONparser::JSONparser(const std::string path) {
 	std::ifstream is(path);
 	json = new std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
-	if (json->empty()) {
-		printf("couldn't open file %s\n", path.c_str());
-		return;
-	}
 	readJSON();
 }
 

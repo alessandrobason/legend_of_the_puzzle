@@ -1,12 +1,20 @@
 #include "RoomManager.h"
-#include "../camera.h"
 
-extern "C" int GetUserNameA(char *lpBuffer, unsigned long *pcbBuffer);
+#include "Tilemap.h"
+#include "../Menus/MainScreen.h"
+#include "../Menus/SplashScreens.h"
+#include "../Menus/MainMenu.h"
+#include "../Menus/Option.h"
+#include "../Menus/Ending.h"
+#include "../Menus/PauseMenu.h"
+#include "../Menus/ControlsMenu.h"
+#include "../Menus/DeathScreen.h"
+#include "../Menus/DebugMenu.h"
 
 RoomManager::RoomManager() {
-	currentstate = STATES::MAP;
+	currentstate = STATES::MENU;
 	currentmenu = "splashscreen";
-	JSONparser soundsjson = JSONparser("data/sounds_to_load.json");
+	JSONparser soundsjson = JSONparser("Data/sounds_to_load.json");
 
 	std::vector<MusicLoading> musictoload;
 	std::vector<MusicLoading> soundstoload;
@@ -31,7 +39,7 @@ RoomManager::RoomManager() {
 	loadMusic(musictoload);
 	loadSounds(soundstoload);
 
-	// eventmanager = EventManager(this);
+	eventmanager = EventManager(this);
 
 	// get username from computer
 	// will not work if the name is longer than 255 characters
@@ -43,27 +51,32 @@ RoomManager::RoomManager() {
 	username = usernamebuffer;
 }
 
-void RoomManager::init() {
-	//loadingThread = new std::thread(&RoomManager::loadMaps, this);
-	// textbox = TextBox(this, in);
+void RoomManager::setData(sf::RenderWindow* win, InputHandler* inp) {
+	w = win; 
+	in = inp;
+
+	textbox = TextBox(this, in);
 
 	// set mouse cursor
-	cursor.tex = loadTexture("cursor", "Assets/cursor.png");
-	cursor.origin = { 3.5f };
+	if (!textures["cursor"].loadFromFile("Assets/cursor.png")) {
+		std::cout << "failed to load mouse texture\n";
+		abort();
+	}
+	cursor.setTexture(textures["cursor"]);
+	cursor.setOrigin(vec2(3.5f, 3.5f));
 
-	HideCursor();
-
-	vec2 screen_size = { (float)GetScreenWidth(), (float)GetScreenHeight() };
+	w->setMouseCursorVisible(false);
 	
-	menutransitiondata.uppersquaretween = Tweening<vec2>({ screen_size.x, 0 }, { screen_size.x, screen_size.y / 2 }, 0.5f);
-	menutransitiondata.bottomsquaretween = Tweening<vec2>({ screen_size.x, 0 }, { screen_size.x, -screen_size.y / 2 }, 0.5f);
+	menutransitiondata.uppersquaretween = Tweening<vec2>(vec2(in->getScreenSize().x, 0), vec2(in->getScreenSize().x, in->getScreenSize().y / 2), 0.5f);
+	menutransitiondata.bottomsquaretween = Tweening<vec2>(vec2(in->getScreenSize().x, 0), vec2(in->getScreenSize().x, -in->getScreenSize().y / 2), 0.5f);
 
-	menutransitiondata.uppersquare = { 0, 0, screen_size.x, 0 };
-	// menutransitiondata.uppersquare.setFillColor(sf::Color::Black);
-	menutransitiondata.bottomsquare = { 0, screen_size.y, screen_size.x, 0 };
-	// menutransitiondata.bottomsquare.setFillColor(sf::Color::Black);
+	menutransitiondata.uppersquare = sf::RectangleShape(vec2(in->getScreenSize().x, 0));
+	menutransitiondata.uppersquare.setPosition(vec2());
+	menutransitiondata.uppersquare.setFillColor(sf::Color::Black);
+	menutransitiondata.bottomsquare = sf::RectangleShape(vec2(in->getScreenSize().x, 0));
+	menutransitiondata.bottomsquare.setPosition(vec2(0, in->getScreenSize().y));
+	menutransitiondata.bottomsquare.setFillColor(sf::Color::Black);
 
-#if 0
 	menuscreens["splashscreen"] = new SplashScreens(w, in, this);
 	menuscreens["startscreen"] = new MainScreen(w, in, this);
 	menuscreens["mainmenu"] = new MainMenu(w, in, this);
@@ -73,11 +86,10 @@ void RoomManager::init() {
 	menuscreens["deathscreen"] = new DeathScreen(w, in, this);
 	menuscreens["debugmenu"] = new DebugMenu(w, in, this);
 	menuscreens["ending"] = new Ending(w, in, this);
-	menuscreens["leaderboard"] = new LeaderboardMenu(w, in, this);
+	// menuscreens["leaderboard"] = new LeaderboardMenu(w, in, this);
 
-#endif
-	p = Player(this);
-	p.getAnimation()->setCallback(&p);
+	p = Player(in, this, w);
+	p.getAnimation()->setCallbackObject(&p);
 
 	enemydata = JSONparser("Data/enemy_data.json");
 
@@ -86,12 +98,11 @@ void RoomManager::init() {
 	map.height = worldmap.doc["height"].i;
 
 	for (size_t i = 0; i < worldmap.doc["Levels"].arr.size(); i++) {
-		map.files.emplace_back(worldmap.doc["Levels"].arr[i].str);
-		maprooms.emplace_back(new Map_room(this, map.files[i]));
+		map.files.push_back(worldmap.doc["Levels"].arr[i].str);
+		maprooms.push_back(new Map_room(this, w, in, map.files[i]));
 	}
-
 	for (size_t i = 0; i < worldmap.doc["map"].arr.size(); i++) {
-		map.data.emplace_back(worldmap.doc["map"].arr[i].i);
+		map.data.push_back(worldmap.doc["map"].arr[i].i);
 	}
 
 	map.spawnpoint = worldmap.doc["spawn"].obj["map"].i;
@@ -100,23 +111,19 @@ void RoomManager::init() {
 
 	loadEnemies();
 	loadMaps();
-	// menuscreens[currentmenu]->start();
+	menuscreens[currentmenu]->start();
 
-	map.startposition = vec2(
-		(float)worldmap.doc["spawn"].obj["position"].arr[0].i, 
-		(float)worldmap.doc["spawn"].obj["position"].arr[1].i
-	);
+	map.startposition = vec2i(worldmap.doc["spawn"].obj["position"].arr[0].i, worldmap.doc["spawn"].obj["position"].arr[1].i);
 	p.setPosition(maprooms[map.data[map.currentRoom]]->getOffset() + map.startposition);
 
 	loadTextures();
 
 	// starting cutscene
 
-	// man = ManObject(in, this, w);
-	
-#if 0
-	getCurrentRoom()->setPause(true);
+	man = ManObject(in, this, w);
 
+	getCurrentRoom()->setPause(true);
+	
 	Event::EventInput dialog;
 	Event::EventInput moveman;
 	Event::EventInput cameramovement;
@@ -162,14 +169,14 @@ void RoomManager::init() {
 	moveman.target = man.getCenter();
 	eventmanager.addEvent(EventManager::EventType::MOVETO, moveman);
 	/////////////////
-#endif
 }
 
 RoomManager::~RoomManager() {
+	delete in;
+	in = nullptr;
 }
 
 void RoomManager::loadEnemies() {
-#if 0
 	if (!textures["enemy"].loadFromFile(enemydata.doc["spritesheet"].str)) {
 		std::cout << "Couldn't load enemy spritesheet\n";
 		abort();
@@ -190,42 +197,44 @@ void RoomManager::loadEnemies() {
 		e.setWindow(w);
 		e.setRoomManager(this);
 		std::string name = current->obj["name"].str;
-		int x = current->obj["collision"].obj["x"].i;
-		int y = current->obj["collision"].obj["y"].i;
-		int wi = current->obj["collision"].obj["width"].i;
-		int h = current->obj["collision"].obj["height"].i;
+		float x = (float)current->obj["collision"].obj["x"].i;
+		float y = (float)current->obj["collision"].obj["y"].i;
+		float width  = (float)current->obj["collision"].obj["width"].i;
+		float height = (float)current->obj["collision"].obj["height"].i;
 		e.collisionlayer = Collision::LAYER::ENEMY;
-		e.collider = Collision(x, y, wi, h, e.collisionlayer);
+		e.collider = Collision(x, y, width, height, e.collisionlayer);
 		
 		int rows = current->obj["rows"].i;
 		int columns = current->obj["columns"].i;
 		AnimatedSprite animatedsprite;
 		animatedsprite.setSpriteSheet(&textures["enemy"], columns, rows);
-		for (size_t j = 0; j < current->obj["animations"].arr.size(); j++) {
+    	auto &json_animations = current->obj["animations"].arr;
+		for (auto &anim : json_animations) {
 			std::vector<int> animFrames;
-			float speed = (float)current->obj["animations"].arr[j].obj["speed"].d;
-			for (size_t k = 0; k < current->obj["animations"].arr[j].obj["array"].arr.size(); k++) {
-				animFrames.push_back(current->obj["animations"].arr[j].obj["array"].arr[k].i);
+			float speed = (float)anim.obj["speed"].d;
+			bool looping = anim.obj["looping"].b;
+			for (auto &frame : anim.obj["array"].arr) {
+				animFrames.emplace_back(frame.i);
 			}
-			animatedsprite.addAnimation(current->obj["animations"].arr[j].obj["name"].str, animFrames, speed);
+			auto &anim_name = anim.obj["name"].str;
+			animatedsprite.addAnimation(anim_name, std::move(animFrames), speed, looping);
 		}
 		animatedsprite.setCurrentAnimation(current->obj["animations"].arr[0].obj["name"].str);
 		
 		e.setAnimatedSprite(animatedsprite);
 		e.setProjectile(current->obj["projectile"].b);
-		e.setSpeed(current->obj["speed"].i);
-		e.setLife(current->obj["life"].d);
+		e.setSpeed((float)current->obj["speed"].i);
+		e.setLife((float)current->obj["life"].d);
 		e.setDamage((float)current->obj["damage"].d);
 
 		enemycopies[name] = e;
 	}
-#endif
 }
 
 void RoomManager::handleInput(float dt) {
 	switch (currentstate) {
 	case RoomManager::STATES::MENU:
-		// menuscreens[currentmenu]->handleInput(dt);
+		menuscreens[currentmenu]->handleInput(dt);
 		break;
 	case RoomManager::STATES::MAP:
 		maprooms[map.data[map.currentRoom]]->handleInput(dt);
@@ -234,17 +243,17 @@ void RoomManager::handleInput(float dt) {
 }
 
 void RoomManager::update(float dt) {
-	cursor.pos = GetScreenToWorld2D(GetMousePosition(), g_view);
+	cursor.setPosition(in->getMouseRelative());
 	switch (currentstate) {
 	case RoomManager::STATES::MENU:
-		// menuscreens[currentmenu]->update(dt);
+		menuscreens[currentmenu]->update(dt);
 		break;
 	case RoomManager::STATES::MAP:
-		// playergui.update(dt);
+		playergui.update(dt);
 		maprooms[map.data[map.currentRoom]]->update(dt);
 		break;
 	case RoomManager::STATES::MAPTRANSITION:
-		// playergui.update(dt);
+		playergui.update(dt);
 		animatetransition(dt);
 		break;
 	case RoomManager::STATES::MENUTRANSITION:
@@ -252,39 +261,43 @@ void RoomManager::update(float dt) {
 		menuTransition(dt);
 		break;
 	case RoomManager::STATES::GAMEOVER:
-		p.getAnimation()->update(dt);
+		p.getAnimation()->animate(dt);
 		break;
 	}
 }
 
 void RoomManager::draw() {
-	ClearBackground(WHITE);
-
+	w->clear();
+	sf::View camera = w->getView();
+	camera.setViewport(in->getView().getViewport());
+	w->setView(camera);
+	w->m_view.begin();
 	switch (currentstate) {
 	case RoomManager::STATES::MENU:
-		// menuscreens[currentmenu]->draw();
+		menuscreens[currentmenu]->draw();
 		break;
 	case RoomManager::STATES::MAP:
 		maprooms[map.data[map.currentRoom]]->draw();
-		// playergui.draw(w);
+		playergui.draw(w);
 		break;
 	case RoomManager::STATES::MAPTRANSITION:
 		maprooms[mapmovement.oldroom]->draw();
 		maprooms[map.data[map.currentRoom]]->draw();
-		// playergui.draw(w);
+		playergui.draw(w);
 		break;
 	case RoomManager::STATES::MENUTRANSITION:
-		// if (menutransitiondata.newmenu == "deathscreen" && currentmenu != "deathscreen") w->draw(*p.getSprite());
-		// else if (currentmenu == "game") maprooms[map.data[map.currentRoom]]->draw();
-		maprooms[map.data[map.currentRoom]]->draw();
-		// else menuscreens[currentmenu]->draw();
+		if (menutransitiondata.newmenu == "deathscreen" && currentmenu != "deathscreen") w->draw(*p.getSprite());
+		else if (currentmenu == "game") maprooms[map.data[map.currentRoom]]->draw();
+		else menuscreens[currentmenu]->draw();
 		drawMenuTransition();
 		break;
 	case RoomManager::STATES::GAMEOVER:
-		p.getSprite()->draw();
+		w->draw(*p.getSprite());
 		break;
 	}
-	cursor.draw();
+	w->draw(cursor);
+	w->m_view.end();
+	w->display();
 }
 
 void RoomManager::loadMaps() {
@@ -309,40 +322,34 @@ void RoomManager::loadMaps() {
 	
 	for (size_t i = 0; i < toLoad.size(); i++) {
 		if (*maprooms[toLoad[i].map]->isloaded == true) continue;
+		int mapx = toLoad[i].position % map.width;
+		int mapy = toLoad[i].position / map.width;
 		std::cout << "load: " << toLoad[i].map << "\n";
-		vec2 offset = {
-			(float)(toLoad[i].position % map.width),
-			(float)(toLoad[i].position / map.width)
-		};
-		maprooms[toLoad[i].map]->load(offset * (float)MAPSIZE);
+		vec2 offset = vec2i(mapx * MAPSIZE, mapy * MAPSIZE);
+		
+		maprooms[toLoad[i].map]->load(offset);
 	}
 }
 
 void RoomManager::loadTextures() {
-#if 0 // NOT todo
-	for (auto &img : images) {
-		Texture tex = LoadTextureFromImage(img.second);
-		if (!tex.id) {
+	for (std::pair<std::string, sf::Image> img : images) {
+		if (!textures[img.first].loadFromImage(img.second)) {
 			std::cout << "couldn't load " << img.first << "\n";
 		}
-		textures[img.first] = tex;
 	}
-	for (auto &map : maprooms) {
-		if (!map->isloaded) {
-			continue;
-		}
-		map->getTilemap()->setTexture(textures["tiles"]);
+	for (size_t i = 0; i < maprooms.size(); i++) {
+		if (!maprooms[i]->isloaded) continue;
+		maprooms[i]->getTilemap()->setTexture(&textures["tiles"]);
 	}
-#endif
 }
 
 void RoomManager::moveRoom(int side) {
 	int oldcurrentroom = map.data[map.currentRoom];
-	View maincamera = maprooms[oldcurrentroom]->getMainCamera();
+	sf::View maincamera = maprooms[oldcurrentroom]->getMainCamera();
 	vec2 oldplayerpos = maprooms[oldcurrentroom]->getPlayerPosition();
 	Player::DIRECTIONS lastplayerdirection = p.getDirection();
 	vec2 offsetdirection;
-	rect bound;
+	rectf bound;
 	switch (side) {
 	case TOP:
 		if (map.currentRoom - map.width  < 0) return;
@@ -366,7 +373,8 @@ void RoomManager::moveRoom(int side) {
 		break;
 	}
 
-	// loadingThread.launch();
+	std::thread loadingThread(&RoomManager::loadMaps, this);
+	loadingThread.detach();
 
 	int currentroom = map.data[map.currentRoom];
 
@@ -379,8 +387,8 @@ void RoomManager::moveRoom(int side) {
 
 	// LERPING
 	// -- camera
-	vec2 finalCamera = maincamera.target + resolution * offsetdirection;
-	mapmovement.cameratween = Tweening<vec2>(maincamera.target, finalCamera, 0.5f);
+	vec2 finalcamera = maincamera.getCenter() + vec2(maincamera.getSize().x * offsetdirection.x, maincamera.getSize().y * offsetdirection.y);
+	mapmovement.cameratween = Tweening<vec2>(maincamera.getCenter(), finalcamera, 0.5f);
 	// -- player
 	vec2 startPlayer = oldplayerpos - p.collider.collision_offset;
 	vec2 finalplayer = startPlayer + (offsetdirection * 17.f);
@@ -390,30 +398,25 @@ void RoomManager::moveRoom(int side) {
 }
 
 void RoomManager::loadMusic(std::vector<MusicLoading> musictoload) {
-#if 0
 	for (size_t i = 0; i < musictoload.size(); i++) {
 		if (!musics[musictoload[i].name].openFromFile("Assets/music/" + musictoload[i].path)) {
 			std::cout << "couldn't open music file for " << musictoload[i].name << " from " << musictoload[i].path << "\n";
-			abort();
+			// abort();
 		}
 		musics[musictoload[i].name].setLoop(true);
 	}
-#endif
 }
 
 void RoomManager::playSong(std::string s) {
-#if 0
 	if (s == currentsong) return;
 	//float oldvolume = musics[currentsong].getVolume();
 	musics[currentsong].pause();
 	currentsong = s;
 	musics[currentsong].setVolume(musicvolume);
 	if (ismusicplaying) musics[currentsong].play();
-#endif
 }
 
 void RoomManager::loadSounds(std::vector<MusicLoading> soundstoload) {
-#if 0
 	for (size_t i = 0; i < soundstoload.size(); i++) {
 		MusicLoading* s = &soundstoload[i];
 		if (sounds[s->name].buffer.loadFromFile("Assets/sounds/" + s->path)) {
@@ -425,17 +428,14 @@ void RoomManager::loadSounds(std::vector<MusicLoading> soundstoload) {
 			abort();
 		}
 	}
-#endif
 }
 
 void RoomManager::playSound(std::string s) {
-#if 0
 	if (ismusicplaying) {
 		float oldvolume = musics[currentsong].getVolume();
 		getSFMLSound(s)->setVolume(oldvolume);
 		getSFMLSound(s)->play();
 	}
-#endif
 }
 
 void RoomManager::playHitSound() {
@@ -444,17 +444,14 @@ void RoomManager::playHitSound() {
 }
 
 void RoomManager::setVolume(float v) {
-#if 0
 	musicvolume = v;
 	getCurrentSong()->setVolume(v);
 	for (auto sound : sounds) {
 		sound.second.sound.setVolume(v);
 	}
-#endif
 }
 
 void RoomManager::animatetransition(float dt) {
-#if 0
 	mapmovement.playertween.update(dt);
 	mapmovement.cameratween.update(dt);
 	
@@ -480,11 +477,9 @@ void RoomManager::animatetransition(float dt) {
 		getCurrentRoom()->setMainCamera(mapmovement.maincamera);
 		currentstate = STATES::MAP;
 	}
-#endif
 }
 
 void RoomManager::moveMenu(std::string newmenu) {
-#if 0
 	lastmenu = currentmenu;
 	menutransitiondata.newmenu = newmenu;
 	if (newmenu == "game") getCurrentRoom()->setPause(true);
@@ -492,16 +487,15 @@ void RoomManager::moveMenu(std::string newmenu) {
 	menutransitiondata.oldvolume = getCurrentSong()->getVolume();
 	currentstate = STATES::MENUTRANSITION;
 	setMenuTransitionOffset(currentmenu);
-#endif
 }
 
 void RoomManager::restartGame() {
 	p.reset();
-	// playergui.reset();
+	playergui.reset();
 	puzzlepiecesfound = 0;
 	map.currentRoom = map.spawnpoint;
-	for (auto &map : maprooms) {
-		if (map->isloaded) map->resetRoom();
+	for (size_t i = 0; i < maprooms.size(); i++) {
+		if(maprooms[i]->isloaded) maprooms[i]->resetRoom();
 	}
 	p.setPosition(getCurrentRoom()->getOffset() + map.startposition);
 	getCurrentRoom()->setPlayer(&p);
@@ -509,7 +503,6 @@ void RoomManager::restartGame() {
 }
 
 void RoomManager::menuTransition(float dt) {
-#if 0
 	menutransitiondata.uppersquaretween.update(dt);
 	menutransitiondata.bottomsquaretween.update(dt);
 	menutransitiondata.musicvolumetween.update(dt);
@@ -561,11 +554,9 @@ void RoomManager::menuTransition(float dt) {
 			setMenuTransitionOffset(newmenu);
 		}
 	}
-#endif
 }
 
 void RoomManager::setMenuTransitionOffset(std::string menu) {
-#if 0
 	sf::View v = w->getView();
 	vec2 offsetU = vec2();
 	vec2 offsetB = vec2(0, in->getScreenSize().y);
@@ -579,22 +570,9 @@ void RoomManager::setMenuTransitionOffset(std::string menu) {
 	w->setView(v);
 	menutransitiondata.uppersquare.setPosition(offsetU);
 	menutransitiondata.bottomsquare.setPosition(offsetB);
-#endif
 }
 
 void RoomManager::drawMenuTransition() {
-#if 0
 	w->draw(menutransitiondata.uppersquare);
 	w->draw(menutransitiondata.bottomsquare);
-#endif
-}
-
-Texture RoomManager::loadTexture(const char *name, const char *filename) {
-	Texture tex = LoadTexture(filename);
-	// if (!tex.id) {
-	// 	std::cout << "error, couldn't load texture: " << filename << "\n";
-	// 	abort();
-	// }
-	// textures.emplace(name, tex);
-	return tex;
 }

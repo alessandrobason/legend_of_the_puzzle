@@ -1,10 +1,11 @@
 #pragma once
+#include <SFML/Graphics.hpp>
 #include "JSONparser/JSONparser.h"
 #include "Framework/GameObject.h"
 #include "Framework/InputHandler.h"
 #include "Framework/Collision.h"
 #include "Framework/Animation.h"
-// #include "Framework/Weapon.h"
+#include "Framework/Weapon.h"
 
 class Player : public GameObject {
 public:
@@ -41,8 +42,6 @@ private:
 	AnimatedSprite animSprite;
 	DIRECTIONS last_direction = DOWN_RIGHT;
 
-	int death_anim_id = -1;
-
 	vec2 local_center;
 	float angle_to_mouse = 0.f;
 
@@ -57,7 +56,7 @@ private:
 
 public:
 	Player();
-	Player(RoomManager* rm);
+	Player(InputHandler* input, RoomManager* rm, sf::RenderWindow* win);
 
 	void handleInput(float dt) override;
 	void update(float dt) override;
@@ -66,7 +65,7 @@ public:
 	void drawDebug() override;
 	void setVisible(bool v) override;
 
-	bool animationCallback(int anim_id) override;
+	bool animationCallback(std::string name) override;
 	
 	float getAngleToMouse() { return angle_to_mouse; }
 
@@ -91,17 +90,17 @@ public:
 	void setPosition(vec2 pos);
 	DIRECTIONS getDirection() { return last_direction; }
 	AnimatedSprite* getAnimation() { return &animSprite; }
-	void setCurrentAnimation(std::string anim) { animSprite.play(anim); }
+	void setCurrentAnimation(std::string anim) { animSprite.setCurrentAnimation(anim); }
 	vec2 getLocalCenter() { return local_center; }
 
 	static std::string getGameObjectString() { return ""; }
 
-	Sprite* getSprite() override { return &animSprite.sprite; };
+	sf::Sprite* getSprite() override { return &animSprite.sprite; };
 
 	void setCheat(CHEATS c, bool b) { cheatsarray[c] = b; if (b) hascheated = true; }
 	bool getCheat(CHEATS c) { return cheatsarray[c]; }
 	bool hasCheated() { return hascheated; }
 
-	// Weapon bow;
+	Weapon bow;
 };
 

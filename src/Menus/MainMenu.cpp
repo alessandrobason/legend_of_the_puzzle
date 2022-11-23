@@ -18,44 +18,44 @@ MainMenu::MainMenu(sf::RenderWindow* window, InputHandler* input, RoomManager* r
 	loadFonts(fontstoload);
 
 	GUIpanel backgroundpanel;
-	backgroundpanel.setRect(rect(0, 0, in->getScreenSize().x, in->getScreenSize().y));
+	backgroundpanel.setRect(rectf(0, 0, in->getScreenSize().x, in->getScreenSize().y));
 	backgroundpanel.setTexture(&roommanager->textures["background"]);
 	backgroundpanel.load();
 
 	GUIverticalalign verticalalign;
 	verticalalign.setParent(&backgroundpanel);
-	verticalalign.setRect(rect(20, 10, 50, 120));
+	verticalalign.setRect(rectf(20, 10, 50, 120));
 	verticalalign.setAlign(GUIelement::ALIGN::NONE, GUIelement::ALIGN::CENTER);
 	verticalalign.setBackgroundColor(sf::Color(255, 0, 0, 100));
 	verticalalign.load();
 
 	GUIbutton startgame = loadButton("start");
 	startgame.setParent(&verticalalign);
-	startgame.setRect(rect(0, 0, 72, 24));
+	startgame.setRect(rectf(0, 0, 72, 24));
 	startgame.setText(&roommanager->fonts["font"], "start");
 	startgame.load();
 
 	GUIbutton options = loadButton("options");
 	options.setParent(&verticalalign);
-	options.setRect(rect(0, 0, 72, 24));
+	options.setRect(rectf(0, 0, 72, 24));
 	options.setText(&roommanager->fonts["font"], "options");
 	options.load();
 
 	GUIbutton controls = loadButton("controls");
 	controls.setParent(&verticalalign);
-	controls.setRect(rect(0, 0, 72, 24));
+	controls.setRect(rectf(0, 0, 72, 24));
 	controls.setText(&roommanager->fonts["font"], "controls");
 	controls.load();
 
 	GUIbutton leaderboard = loadButton("leaderboard");
 	leaderboard.setParent(&verticalalign);
-	leaderboard.setRect(rect(0, 0, 72, 24));
+	leaderboard.setRect(rectf(0, 0, 72, 24));
 	leaderboard.setText(&roommanager->fonts["font"], "leaderboard");
 	leaderboard.load();
 
 	GUIbutton exit = loadButton("exit");
 	exit.setParent(&verticalalign);
-	exit.setRect(rect(0, 0, 72, 24));
+	exit.setRect(rectf(0, 0, 72, 24));
 	exit.setText(&roommanager->fonts["font"], "exit");
 	exit.load();
 

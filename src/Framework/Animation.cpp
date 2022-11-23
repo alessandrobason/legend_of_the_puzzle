@@ -1,19 +1,17 @@
 #include "Animation.h"
 #include "GameObject.h"
 
-#include <assert.h>
-
 AnimatedSprite::AnimatedSprite() {
 	// cb_fun = &GameObject::animationCallback;
 }
 
-void AnimatedSprite::init(Texture tex, int new_columns) {
-	sprite.tex = tex;
-	sprite.tex_rect.size = { (float)tex.width, (float)tex.height };
+void AnimatedSprite::setSpriteSheet(sf::Texture *tex, int new_columns, int rows) {
+	sprite.setTexture(*tex);
+	sprite.setTextureRect({ vec2i(0, 0), tex->getSize() });
 	columns = new_columns;
 }
 
-void AnimatedSprite::update(float dt) {
+void AnimatedSprite::animate(float dt) {
 	if (!playing || cur_anim < 0 || cur_anim >= animations.size()) {
 		return;
 	}
@@ -24,8 +22,8 @@ void AnimatedSprite::update(float dt) {
 		timer = 0;
 		cur_frame++;
 		if (cur_frame >= anim.frames.size()) {
-			if (cb_obj) {
-				// (cb_obj->*cb_fun)(cur_anim);
+			if (cb_fun) {
+				cb_fun(cur_anim_name);
 			}
 			if (anim.looping) {
 				cur_frame = 0;
@@ -39,8 +37,8 @@ void AnimatedSprite::update(float dt) {
 	}
 }
 
-void AnimatedSprite::draw() {
-	sprite.draw();
+void AnimatedSprite::draw(sf::RenderWindow *w) {
+	w->draw(sprite);
 }
 
 void AnimatedSprite::updateSprite() {
@@ -49,36 +47,54 @@ void AnimatedSprite::updateSprite() {
 	}
 
 	int frame = animations[cur_anim].frames[cur_frame];
-	sprite.tex_rect.pos = {
-		(float)(frame % columns),
-		(float)(frame / columns)
+	sprite.m_tex_rect.pos = {
+		frame % columns,
+		frame / columns
 	};
-	sprite.tex_rect.pos *= sprite.tex_rect.size;
+	sprite.m_tex_rect.pos *= sprite.m_tex_rect.size;
 }
 
 void AnimatedSprite::reset() {
 	cur_frame = 0;
-	play(0);
+	setCurrentAnimation(0);
 	timer = 0.f;
 	playing = true;
 	updateSprite();
 }
 
-void AnimatedSprite::play(const std::string &name) {
-	play(anim_map[name]);
+void AnimatedSprite::setCurrentAnimation(const std::string &name) {
+	playInternal(anim_map[name], name);
 }
 
-void AnimatedSprite::play(int id) {
+void AnimatedSprite::setCurrentAnimation(int id) {
+	playInternal(id);
+}
+
+void AnimatedSprite::playInternal(int id, const std::string &name) {
 	if (id < 0 || id >= animations.size()) {
 		return;
 	}
+
+	if (name.empty()) {
+		for (const auto &anim : anim_map) {
+			if (anim.second == cur_anim) {
+				cur_anim_name = anim.first;
+				break;
+			}
+		}
+	}
+	else {
+		cur_anim_name = name;
+	}
+
 	if (cur_anim != id) {
 		cur_anim = id;
 		reset();
 	}
 }
 
-const std::string &AnimatedSprite::getAnimationName() const {
+
+const std::string &AnimatedSprite::getCurrentAnimation() const {
 	for (const auto &anim : anim_map) {
 		if (anim.second == cur_anim) {
 			return anim.first;
@@ -104,6 +120,8 @@ int AnimatedSprite::addAnimation(
 	return id;
 }
 
-void AnimatedSprite::setCallback(GameObject *object) {
-	cb_obj = object;
+void AnimatedSprite::setCallbackObject(GameObject *object) {
+	cb_fun = [&object] (const std::string &name) {
+		object->animationCallback(name);
+	};
 }

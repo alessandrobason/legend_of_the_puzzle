@@ -4,52 +4,63 @@ project(LOTP)
 # Generate compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+file(COPY assets DESTINATION .)
+file(COPY data DESTINATION .)
+file(COPY rooms DESTINATION .)
+
+file(COPY assets DESTINATION Debug)
+file(COPY data DESTINATION Debug)
+file(COPY rooms DESTINATION Debug)
+
 add_executable(LOTP 
-    src/camera.cpp
     src/Main.cpp
     src/Map_room.cpp
     src/Player.cpp
     src/Framework/Animation.cpp
     src/Framework/Collision.cpp
-    # src/Framework/EventManager.cpp
-    # src/Framework/Interactable.cpp
-    # src/Framework/Projectiles.cpp
+    src/Framework/EventManager.cpp
+    src/Framework/Interactable.cpp
+    src/Framework/Projectiles.cpp
     src/Framework/Room.cpp
     src/Framework/RoomManager.cpp
-    # src/Framework/TextBox.cpp
+    src/Framework/TextBox.cpp
     src/Framework/TileMap.cpp
-    # src/Framework/Weapon.cpp
-    # src/Framework/Events/EVENTfadeinout.cpp
-    # src/Framework/Events/EVENTgetpiece.cpp
-    # src/Framework/Events/EVENTmenu.cpp
-    # src/Framework/Events/EVENTmoveto.cpp
-    # src/Framework/Events/EVENTsay.cpp
-    # src/Framework/Events/EVENTwin.cpp
-    # src/Framework/GUI/GUIbox.cpp
-    # src/Framework/GUI/GUIbutton.cpp
-    # src/Framework/GUI/GUIcheckbox.cpp
-    # src/Framework/GUI/GUIelement.cpp
-    # src/Framework/GUI/GUImanager.cpp
-    # src/Framework/GUI/GUItiledelement.cpp
-    # src/GameObjects/Enemy.cpp
-    # src/GameObjects/ManObject.cpp
-    # src/GameObjects/Octorock.cpp
-    # src/Interactables/ManInteractable.cpp
-    # src/Interactables/Statue.cpp
+    src/Framework/Weapon.cpp
+    src/Framework/Events/EVENTfadeinout.cpp
+    src/Framework/Events/EVENTgetpiece.cpp
+    src/Framework/Events/EVENTmenu.cpp
+    src/Framework/Events/EVENTmoveto.cpp
+    src/Framework/Events/EVENTsay.cpp
+    src/Framework/Events/EVENTwin.cpp
+    src/Framework/GUI/GUIbox.cpp
+    src/Framework/GUI/GUIbutton.cpp
+    src/Framework/GUI/GUIcheckbox.cpp
+    src/Framework/GUI/GUIelement.cpp
+    src/Framework/GUI/GUImanager.cpp
+    src/Framework/GUI/GUItiledelement.cpp
+    src/GameObjects/Enemy.cpp
+    src/GameObjects/ManObject.cpp
+    src/GameObjects/Octorock.cpp
+    src/Interactables/ManInteractable.cpp
+    src/Interactables/Statue.cpp
     src/JSONparser/JSONparser.cpp
-    # src/Menus/ControlsMenu.cpp
-    # src/Menus/DeathScreen.cpp
-    # src/Menus/DebugMenu.cpp
-    # src/Menus/Ending.cpp
+    src/Menus/ControlsMenu.cpp
+    src/Menus/DeathScreen.cpp
+    src/Menus/DebugMenu.cpp
+    src/Menus/Ending.cpp
     # src/Menus/LeaderboardMenu.cpp
-    # src/Menus/MainMenu.cpp
-    # src/Menus/MainScreen.cpp
-    # src/Menus/Option.cpp
-    # src/Menus/PauseMenu.cpp
-    # src/Menus/SplashScreens.cpp
+    src/Menus/MainMenu.cpp
+    src/Menus/MainScreen.cpp
+    src/Menus/Option.cpp
+    src/Menus/PauseMenu.cpp
+    src/Menus/SplashScreens.cpp
+
+    SFML_Raylib/SFML/sfml.cpp
 )
 
 add_subdirectory(libs)
+
+target_include_directories(LOTP PRIVATE SFML_Raylib)
 
 # # Dependencies
 # set(RAYLIB_VERSION 4.2.0)

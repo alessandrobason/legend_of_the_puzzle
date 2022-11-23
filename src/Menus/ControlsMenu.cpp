@@ -22,13 +22,13 @@ ControlsMenu::ControlsMenu(sf::RenderWindow* window, InputHandler* input, RoomMa
 
 	GUIbox background;
 	background.setTexture(&roommanager->textures["guiboxwbg"]);
-	background.setRect(rect(0, 0, in->getScreenSize().x, in->getScreenSize().y));
+	background.setRect(rectf(0, 0, in->getScreenSize().x, in->getScreenSize().y));
 	background.setTileSize(16);
 	background.load();
 
 	GUIpanel controls;
 	controls.setTexture(&roommanager->textures["controls"]);
-	controls.setRect(rect(0, 0, in->getScreenSize().x, in->getScreenSize().y));
+	controls.setRect(rectf(0, 0, in->getScreenSize().x, in->getScreenSize().y));
 	controls.load();
 
 	GUItext pause_label = loadLabel("pause", vec2(13, 25));
@@ -57,7 +57,7 @@ ControlsMenu::ControlsMenu(sf::RenderWindow* window, InputHandler* input, RoomMa
 
 	GUIbutton back = loadButton("back");
 	back.setParent(&background);
-	back.setRect(rect(0, 0, 32, 20));
+	back.setRect(rectf(0, 0, 32, 20));
 	back.setText(&roommanager->fonts["font"], "back");
 	back.setAlign(GUIelement::ALIGN::RIGHT, GUIelement::ALIGN::BOTTOM);
 	back.setOffset(vec2(-5, -10));

@@ -4,7 +4,7 @@
 
 Octorock::Octorock(const Enemy& e) : Enemy(e) {
 	projectiles = Projectiles(&roommanager->textures["enemyproj"], vec2i(), Collision::LAYER::ENEMY, roommanager);
-	projectiles.setHitBox(rect(0, 0, 9, 8));
+	projectiles.setHitBox(rectf(0, 0, 9, 8));
 	projectiles.setOrientation(vec2(-1, 0));
 	projectiles.setSize(vec2(9, 8));
 	projectiles.setDamage(damage);
@@ -53,9 +53,9 @@ void Octorock::Advance() {
 			currentstate = states::MOVING;
 		}
 		else if (target == vec2()) {
-			int x = rand() % (int)checkbox.rect.width - checkbox.rect.width / 2;
-			int y = rand() % (int)checkbox.rect.height - checkbox.rect.height / 2;
-			target = vec2(x, y) + getCenter();
+			int x = rand() % (int)checkbox.rect.width - (int)(checkbox.rect.width / 2);
+			int y = rand() % (int)checkbox.rect.height - (int)(checkbox.rect.height / 2);
+			target = vec2i(x, y) + getCenter();
 		}
 		break;
 	case states::ATTACK:

@@ -25,13 +25,13 @@ OptionMenu::OptionMenu(sf::RenderWindow* window, InputHandler* input, RoomManage
 
 	GUIbox background;
 	background.setTexture(&roommanager->textures["guiboxwbg"]);
-	background.setRect(rect(0, 0, in->getScreenSize().x, in->getScreenSize().y));
+	background.setRect(rectf(0, 0, in->getScreenSize().x, in->getScreenSize().y));
 	background.setTileSize(16);
 	background.load();
 
 	GUIverticalalign verticalalign;
 	verticalalign.setParent(&background);
-	verticalalign.setRect(rect(0, 0, 100, 100));
+	verticalalign.setRect(rectf(0, 0, 100, 100));
 	verticalalign.setAlign(GUIelement::ALIGN::CENTER, GUIelement::ALIGN::CENTER);
 	verticalalign.load();
 
@@ -41,7 +41,7 @@ OptionMenu::OptionMenu(sf::RenderWindow* window, InputHandler* input, RoomManage
 
 	GUIhorizontalalign fullscreenhoralign;
 	fullscreenhoralign.setParent(&verticalalign);
-	fullscreenhoralign.setRect(rect(0, 0, 100, 10));
+	fullscreenhoralign.setRect(rectf(0, 0, 100, 10));
 	fullscreenhoralign.load();
 
 	GUItext fullscreenlabel;
@@ -71,7 +71,7 @@ OptionMenu::OptionMenu(sf::RenderWindow* window, InputHandler* input, RoomManage
 
 	GUIhorizontalalign mutehoralign;
 	mutehoralign.setParent(&verticalalign);
-	mutehoralign.setRect(rect(0, 0, 80, 10));
+	mutehoralign.setRect(rectf(0, 0, 80, 10));
 	mutehoralign.load();
 
 	GUItext mutelabel;
@@ -101,7 +101,7 @@ OptionMenu::OptionMenu(sf::RenderWindow* window, InputHandler* input, RoomManage
 
 	GUIhorizontalalign volumehoralign;
 	volumehoralign.setParent(&verticalalign);
-	volumehoralign.setRect(rect(0, 0, 120, 10));
+	volumehoralign.setRect(rectf(0, 0, 120, 10));
 	volumehoralign.load();
 
 	GUItext volumelabel;
@@ -117,7 +117,7 @@ OptionMenu::OptionMenu(sf::RenderWindow* window, InputHandler* input, RoomManage
 	volume.setParent(&volumehoralign);
 	volume.setMinMaxValue(0, 100);
 	volume.setTexture(&roommanager->textures["slider"]);
-	volume.setRect(rect(0, 0, 50, 8));
+	volume.setRect(rectf(0, 0, 50, 8));
 	volume.setInput(in);
 	volume.setValue(100.f);
 	volume.setCallback(this);
@@ -135,7 +135,7 @@ OptionMenu::OptionMenu(sf::RenderWindow* window, InputHandler* input, RoomManage
 	backbutton.setId("back");
 	backbutton.setParent(&verticalalign);
 	backbutton.setTexture(&roommanager->textures["guibutton"]);
-	backbutton.setRect(rect(0, 0, 64, 24));
+	backbutton.setRect(rectf(0, 0, 64, 24));
 	backbutton.setText(&roommanager->fonts["font"], "go back");
 	backbutton.setNormalTexture(&roommanager->textures["guibutton"]);
 	backbutton.setHoverTexture(&roommanager->textures["guibuttonhover"]);
@@ -186,13 +186,15 @@ void OptionMenu::update(float dt) {
 void OptionMenu::callback(std::string id, RESPONSE value) {
 	if (id == "fullscreen") {
 		if (value.b) {
-			w->create(sf::VideoMode::getFullscreenModes()[0], "Game Project", sf::Style::Fullscreen);
+			// w->create(sf::VideoMode::getFullscreenModes()[0], "Game Project", sf::Style::Fullscreen);
+			w->setFullscreen(true);
 			in->resizeView(w->getSize());
 			w->setView(in->getView());
 			in->isfullscreen = true;
 		}
 		else {
-			w->create(sf::VideoMode(in->getScreenSize().x * 5, in->getScreenSize().y * 5), "Game Project");
+			// w->create(sf::VideoMode(in->getScreenSize().x * 5, in->getScreenSize().y * 5), "Game Project");
+			w->setFullscreen(false);
 			in->resizeView(w->getSize());
 			w->setView(in->getView());
 			in->isfullscreen = false;

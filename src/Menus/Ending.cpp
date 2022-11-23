@@ -30,7 +30,7 @@ Ending::Ending(sf::RenderWindow* window, InputHandler* input, RoomManager* rm) :
 
 	GUIpanel background;
 	background.setTexture(&roommanager->textures["ending"]);
-	background.setRect(rect(0, 0, in->getScreenSize().x, in->getScreenSize().y));
+	background.setRect(rectf(0, 0, in->getScreenSize().x, in->getScreenSize().y));
 	background.load();
 
 	backgroundpointer = new GUIpanel(background);
@@ -38,7 +38,7 @@ Ending::Ending(sf::RenderWindow* window, InputHandler* input, RoomManager* rm) :
 	GUIbutton leaderboard = loadButton("leaderboard");
 	leaderboard.setParent(backgroundpointer);
 	leaderboard.setAlign(GUIelement::ALIGN::CENTER, GUIelement::ALIGN::BOTTOM);
-	leaderboard.setRect(rect(0, 0, 72, 24));
+	leaderboard.setRect(rectf(0, 0, 72, 24));
 	leaderboard.setText(&roommanager->fonts["font"], "leaderboard");
 	leaderboard.setOffset(vec2(0, -5));
 	leaderboard.load();
@@ -80,11 +80,13 @@ void Ending::start() {
 	roommanager->playSong("ending");
 	roommanager->restartGame();
 
+// (TODO) leaderboard stuff, needs network module
+#if 0 
 	// convert the time taken by the player (in seconds) to h/m/s
 	int hours = 0, minutes = 0, seconds = 0;
 	seconds = ((int)roommanager->scoreclock) % 60;
-	minutes = roommanager->scoreclock / 60;
-	hours = minutes / 60;
+	minutes = (int)(roommanager->scoreclock / 60);
+	hours = (int)(minutes / 60);
 	if (minutes >= 60) minutes = minutes % 60;
 	std::string finaltime = "";
 	if (hours != 0) finaltime = std::to_string(hours);
@@ -94,20 +96,21 @@ void Ending::start() {
 	else finaltime += std::to_string(seconds);
 
 	//send the score to the leaderboard
-	roommanager->httpleaderboard.sendScore(roommanager->getUsername(), finaltime, roommanager->getPlayer()->hasCheated());
+	// roommanager->httpleaderboard.sendScore(roommanager->getUsername(), finaltime, roommanager->getPlayer()->hasCheated());
+#endif
 
-	Event::EventInput fade;
-	fade.time = 2.f;
-	fade.fadeout = false;
-	fade.fadesong = true;
-	roommanager->eventmanager.addEvent(EventManager::EventType::FADE, fade);
+	// Event::EventInput fade;
+	// fade.time = 2.f;
+	// fade.fadeout = false;
+	// fade.fadesong = true;
+	// roommanager->eventmanager.addEvent(EventManager::EventType::FADE, fade);
 }
 
 void Ending::update(float dt) {
 	main_camera.setViewport(Room::in->getView().getViewport());
 	Room::w->setView(main_camera);
-	roommanager->eventmanager.update(dt);
-	if (roommanager->eventmanager.getNumberOfEvents() == 0 && positionincredits != -1) {
+	// roommanager->eventmanager.update(dt);
+	if (/* roommanager->eventmanager.getNumberOfEvents() == 0  && */ positionincredits != -1) {
 		if (fade.isfinished()) {
 			timeleft -= dt;
 			if (timeleft <= 0) {
@@ -130,7 +133,7 @@ void Ending::update(float dt) {
 		}
 		else {
 			fade.update(dt);
-			textcolor.a = fade.getValue();
+			textcolor.a = (sf::uchar)fade.getValue();
 			creditspointer->getText()->setFillColor(textcolor);
 			creditspointer->getText()->setOutlineColor(sf::Color(0, 0, 0, textcolor.a));
 		}
@@ -142,7 +145,7 @@ void Ending::update(float dt) {
 
 void Ending::draw() {
 	GUImanager::draw();
-	roommanager->eventmanager.draw(w);
+	// roommanager->eventmanager.draw(w);
 }
 
 void Ending::callback(std::string id, RESPONSE value) {

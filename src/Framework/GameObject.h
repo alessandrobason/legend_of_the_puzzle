@@ -1,37 +1,38 @@
 #pragma once
-// #include <SFML/Graphics.hpp>
+#include <SFML/Graphics.hpp>
 #include <iostream>
 #include "InputHandler.h"
 #include "Collision.h"
 #include "UsefulFunctions.h"
 #include "RoomManager.fwd.h"
 #include "FiniteStateMachine.h"
-#include "sprite.h"
 
 class GameObject : public FiniteStateMachine {
 public:
 	GameObject() {}
-	GameObject(RoomManager* rm) {
-		collider.setDebugColor(GREEN);
+	GameObject(InputHandler* i, RoomManager* rm, sf::RenderWindow* win) {
+		collider.setDebugColor(sf::Color::Green);
+		in = i;
 		roommanager = rm;
+		w = win;
 	}
 
 	// Virtual update/draw function.
 	virtual void handleInput(float dt) {}
 	virtual void update(float dt) {}
 	virtual void draw() {}
-	virtual void drawDebug() { collider.drawDebug(); }
+	virtual void drawDebug() { collider.drawDebug(w); }
 
-	virtual bool animationCallback(int anim_id) { std::cout << "gameobject: " << anim_id << "\n"; return false; }
+	virtual bool animationCallback(std::string name) { std::cout << "gameobject: " << name << "\n"; return false; }
 
 	virtual void updateAnimation(float dt) {}
 
 	virtual void isPlayerInside(bool p) {}
 
-	virtual Sprite* getSprite() { return nullptr; }
+	virtual sf::Sprite* getSprite() { return nullptr; }
 
 	virtual void move(vec2 mov) {
-		if (Sprite *spr = getSprite()) spr->pos += mov;
+		getSprite()->move(mov);
 		collider.moveCollision(mov);
 	}
 
@@ -52,28 +53,34 @@ public:
 	}
 
 	virtual void setVisible(bool v) {
-		if (Sprite *spr = getSprite()) 
-			spr->color = flashing.color[v];
+		getSprite()->setColor(flashing.color[v]);
 	}
 
 	// Set the input component
+	void setInput(InputHandler* input) { in = input; }
+	void setWindow(sf::RenderWindow* win) { w = win; }
 	void setRoomManager(RoomManager* rm) { roommanager = rm; }
 
-	float getY() { return collider.box.y; }
+	float getY() { return collider.rect.top; }
 
 	virtual void setPosition(vec2 position) {
-		collider.box.pos = position;
-		collider.setDebugPosition(position + 1);
-		if (Sprite *spr = getSprite()) spr->pos = position;
+		getSprite()->setPosition(position);
+		collider.rect = rectf(position.x, position.y, collider.rect.width, collider.rect.height);
+		collider.setDebugPosition(vec2(position.x+1, position.y+1));
 	}
-	virtual vec2 getPosition() { if (Sprite *spr = getSprite()) return spr->pos; return {}; }
+	virtual vec2 getPosition() { return getSprite()->getPosition(); }
 
-	vec2 getCenter() { return collider.box.pos + collider.box.size / 2.f; }
+	vec2 getCenter() {
+		vec2 c;
+		c.x = collider.rect.left + collider.rect.width / 2;
+		c.y = collider.rect.top + collider.rect.height / 2;
+		return c;
+	}
 
 	bool moveTo(vec2 target, float dt) {
 		vel = target - getCenter();
-		if (vel.mag2() <= 1.f) return true;
-		vel.normalise();
+		if (UsefulFunc::magnitude2(vel) <= 1.f) return true;
+		vel = UsefulFunc::normalize(vel);
 		move(vel * speed * dt);
 		updateAnimation(dt);
 		return false;
@@ -84,8 +91,8 @@ public:
 	float getSpeed() { return speed; }
 
 	// Setter/getter for texture component
-	void setTexture(Texture t) { txt = t; }
-	Texture getTexture() { return txt; }
+	void setTexture(sf::Texture* t) { txt = t; }
+	sf::Texture* getTexture() { return txt; }
 
 	virtual void hit(float damage) { std::cout << "Object hit\n"; }
 
@@ -104,15 +111,17 @@ protected:
 
 	bool dead = false;
 
+	InputHandler* in = nullptr;
+	sf::RenderWindow* w = nullptr;
 	// pointer to the room manager
 	RoomManager* roommanager = nullptr;
 
-	Texture txt;
+	sf::Texture* txt = nullptr;
 
 	struct FLASHING {
 		bool isflashing = false;
 		bool isvisible = true;
-		Color color[2] = { BLANK, WHITE };
+		sf::Color color[2] = { sf::Color(255, 255, 255, 0), sf::Color(255, 255, 255, 255) };
 		float timepassed = 0.f;
 		float flashtime = 0.6f;
 		int todo = 6;

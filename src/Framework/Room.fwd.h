@@ -1,5 +1,9 @@
 #pragma once
 
+#include <SFML/Graphics.hpp>
+#include <vector>
+#include "TileMap.h"
+
 class Room;
 
 struct MapData {
@@ -7,5 +11,5 @@ struct MapData {
 	std::vector<int> layers;
 	Tilemap::tilemap_data tilemap_data;
 	Tilemap tilemap;
-	// sf::Shader shader;
+	sf::Shader shader;
 };

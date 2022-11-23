@@ -2,40 +2,42 @@
 #include <iostream>
 
 Collision::Collision() {
-	box = { 0, 0, 0, 0 };
+	rect = rectf(0, 0, 0, 0);
 	collision_offset = vec2();
-	setupDebugBox(box);
+	setupDebugBox(rect);
 }
 
-Collision::Collision(rect r, LAYER t) {
+Collision::Collision(rectf r, LAYER t) {
 	collisionlayer = t;
-	box = r;
-	collision_offset = r.pos;
-	setupDebugBox(box);
+	rect = r;
+	collision_offset = vec2(r.left, r.top);
+	setupDebugBox(rect);
 }
 
 Collision::Collision(float x, float y, float w, float h, LAYER t) {
 	collisionlayer = t;
-	box = { x, y, w, h };
-	collision_offset = { x, y };
-	setupDebugBox(box);
+	rect = rectf(x, y, w, h);
+	collision_offset = vec2(x, y);
+	setupDebugBox(rect);
 }
 
-void Collision::setupDebugBox(rect r) {
-	debug.pos = r.pos + 1.f;
-	debug.size = r.size - 2.f;
-	color = RED;
+void Collision::setupDebugBox(rectf r) {
+	debug.setPosition(vec2(r.left + 1, r.top + 1));
+	debug.setSize(vec2(r.width - 2, r.height - 2));
+	debug.setOutlineColor(sf::Color::Red);
+	debug.setOutlineThickness(1.f);
+	debug.setFillColor(sf::Color::Transparent);
 }
 
 Collision::~Collision() {}
 
 //////////////////////////////////////////////////
 
-bool Collision::Check_Collision(rect r) {
-	return isenabled && CheckCollisionRecs(box, r);
+bool Collision::Check_Collision(rectf r) {
+	return rect.intersects(r) && r!=rect && isenabled;
 }
 
-vec2 Collision::getCollisionSide(rect r, vec2& oldVel) {
+vec2 Collision::getCollisionSide(rectf r, vec2& oldVel) {
 	vec2 reverseVel = vec2(0, 0);
 
 	bool left = false, right = false, top = false, bottom = false;
@@ -48,20 +50,20 @@ vec2 Collision::getCollisionSide(rect r, vec2& oldVel) {
 	//top = true; left = true; bottom = true; right = true;
 	
 	// if left side is after half of rectangle (coming from RIGHT)
-	if (box.x >= r.x + (r.w / 2.f) && right) {
-		reverseVel.x = r.x + r.w - box.x;
+	if (rect.left >= r.left + (r.width / 2) && right) {
+		reverseVel.x = r.left + r.width - rect.left;
 	}
 	// if left side is before half of rectangle (coming from LEFT)
-	else if (box.x <= r.x + (r.w / 2.f) && left) {
-		reverseVel.x -= box.x + box.w - r.x;
+	else if(rect.left <= r.left + (r.width / 2) && left) {
+		reverseVel.x -= rect.left + rect.width - r.left;
 	}
 	// if top side is after half of rectangle (coming from BOTTOM)
-	if (box.y >= r.y + (r.h / 2.f) && bottom) {
-		reverseVel.y = r.y + r.h - box.y;
+	if (rect.top >= r.top + (r.height/2) && bottom) {
+		reverseVel.y = r.top + r.height - rect.top;
 	}
 	// if top side is after half of rectangle (coming from TOP)
-	else if(box.y <= r.y + (r.h / 2) && top){
-		reverseVel.y -= box.y + box.h - r.y;
+	else if(rect.top <= r.top + (r.height / 2) && top){
+		reverseVel.y -= rect.top + rect.height - r.top;
 	}
 
 	if (std::abs(reverseVel.x) > 1)		reverseVel.x = 0;
@@ -71,20 +73,24 @@ vec2 Collision::getCollisionSide(rect r, vec2& oldVel) {
 }
 
 void Collision::setPosition(vec2 pos) {
-	box.pos = pos;
-	debug.pos = box.pos + 1;
+	rect.left = pos.x;
+	rect.top = pos.y;
+	debug.setPosition(vec2(rect.left + 1, rect.top + 1));
 }
 
 void Collision::setCenter(vec2 c) {
-	box.pos = c - box.size / 2.f;
-	debug.pos = box.pos + 1.f;
+	rect.left = c.x - rect.width / 2;
+	rect.top = c.y - rect.height / 2;
+	debug.setPosition(vec2(rect.left + 1, rect.top + 1));
 }
 
 void Collision::moveCollision(vec2 mov) {
-	box.pos += mov;
-	debug.pos = box.pos + 1.f;
+	rect.left += mov.x;
+	rect.top += mov.y;
+	debug.setPosition(vec2(rect.left + 1, rect.top + 1));
 }
 
-void Collision::drawDebug() {
-	DrawRectangleLinesEx(debug, 1.f, color);
+void Collision::drawDebug(sf::RenderWindow* w) {
+	//debug.setPosition(vec2(rect.left, rect.top));
+	w->draw(debug);
 }

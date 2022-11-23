@@ -1,17 +1,19 @@
 #pragma once
 #include <string>
+#include <SFML/Graphics.hpp>
 #include "../JSONparser/JSONparser.h"
 #include "InputHandler.h"
 #include "GameObject.h"
 #include "Tilemap.h"
 #include "Room.fwd.h"
 #include "RoomManager.fwd.h"
-#include "../camera.h"
+
+class InputHandler;
 
 class Room {
 public:
 	Room() {}
-	Room(std::string fold, RoomManager* rm);
+	Room(std::string fold, sf::RenderWindow* window, InputHandler* input, RoomManager* rm);
 	~Room();
 
 	virtual void handleInput(float dt) {}
@@ -20,9 +22,10 @@ public:
 	virtual void load(vec2 offset) {}
 	virtual void start() {}
 
-	void setMainCamera(View c) { main_camera = c; }
-	View getMainCamera() { return main_camera; }
+	sf::View getMainCamera() { return main_camera; }
 	std::string getFile() { return FILE; }
+
+	void setMainCamera(sf::View c) { main_camera = c; }
 
 	virtual void resetRoom() {}
 
@@ -35,6 +38,11 @@ public:
 	};
 
 protected:
+	// input handler
+	InputHandler* in = nullptr;
+	// render window
+	sf::RenderWindow* w = nullptr;
+
 	// room manager
 	RoomManager* roommanager = nullptr;
 
@@ -43,7 +51,7 @@ protected:
 	const std::string ASSETS = "Assets/";
 
 	// main camera
-	View main_camera;
+	sf::View main_camera;
 
 	// vectors with scene objects/colliders
 	std::vector<GameObject*> sceneObjects;

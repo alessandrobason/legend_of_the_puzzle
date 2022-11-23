@@ -27,7 +27,7 @@ public:
 
 	void isPlayerInside(bool p) { isplayerinside = p; }
 
-	sf::Sprite* getSprite() override { return animation.getSprite(); }
+	sf::Sprite* getSprite() override { return &animation.sprite; }
 
 protected:
 	enum DIRECTION {

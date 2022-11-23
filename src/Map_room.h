@@ -1,16 +1,16 @@
 #pragma once
 #include <iostream>
 #include "Framework/Room.h"
-// #include "Framework/TextBox.h"
-// #include "Interactables/Statue.h"
-// #include "Interactables/ManInteractable.h"
+#include "Framework/TextBox.h"
+#include "Interactables/Statue.h"
+#include "Interactables/ManInteractable.h"
 #include "Player.h"
 #include "GameObjects/Octorock.h"
-// #include "GameObjects/ManObject.h"
+#include "GameObjects/ManObject.h"
 
 class Map_room : public Room {
 public:
-	Map_room(RoomManager* rm, std::string fold);
+	Map_room(RoomManager* rm, sf::RenderWindow* window, InputHandler* input, std::string fold);
 	~Map_room();
 
 	void updateCamera();
@@ -19,14 +19,14 @@ public:
 	void setPlayer(Player* pl);
 	void removePlayer();
 	void setPlayerPosition(vec2 pos);
-	vec2 getPlayerPosition() { return p->collider.box.pos; };
+	vec2 getPlayerPosition() { return vec2(p->collider.rect.left, p->collider.rect.top); };
 	Player* getPlayer() { return p; }
-	rect getBound(int i) { return bounds[i]; }
+	rectf getBound(int i) { return bounds[i]; }
 	vec2 getCameraTopLeft() { return camera_top_left; }
 	void setCameraPosition(vec2 position) {
-		main_camera.target = position;
-		camera_top_left = GetScreenToWorld2D({ 0, 0 }, main_camera);
-		// camera_top_left = main_camera.getCenter() - main_camera.getSize() / 2.f;
+		main_camera.setCenter(position);
+		camera_top_left = main_camera.getCenter() - main_camera.getSize() / 2.f;
+		w->setView(main_camera);
 	}
 
 	void sortGameObjects();
@@ -49,31 +49,31 @@ public:
 	void setPause(bool p) { paused = p; }
 	bool getPause() { return paused; }
 
-	Tilemap* getTilemap() { return &tilemap; }
+	Tilemap* getTilemap() { return tilemap; }
 
-	// vec2 moveRoom(sf::Transform t);
+	vec2 moveRoom(sf::Transform t);
 	void setBounds(vec2 offset);
 	vec2 getOffset() { return offset; }
 	
 private:
-	rect bounds[4];
+	rectf bounds[4];
 
 	vec2 camera_top_left;
 	vec2 camera_bottom_right;
 
 	bool paused = false;
 
-	// TextBox* textbox = nullptr;
+	TextBox* textbox = nullptr;
 
 	// tilemap data
-	Tilemap tilemap;
-	JSONparser tilemap_json;
+	Tilemap* tilemap = nullptr;
+	JSONparser* tilemap_json = nullptr;
 	vec2 offset;
-	std::vector<int> layers;
-	Tilemap::tilemap_data tilemap_data;
-	// sf::Shader* shader = nullptr;
+	std::vector<int>* layers = nullptr;
+	Tilemap::tilemap_data* tilemap_data = nullptr;
+	sf::Shader* shader = nullptr;
 
-	// std::vector<Interactable*> interactables;
+	std::vector<Interactable*> interactables;
 
 	// enemies data, used to reset the scene
 	std::vector<JSONparser::datatypes> enemiesData;

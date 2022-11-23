@@ -20,24 +20,24 @@ DeathScreen::DeathScreen(sf::RenderWindow* window, InputHandler* input, RoomMana
 
 	GUIpanel background;
 	background.setTexture(&roommanager->textures["deathbackground"]);
-	background.setRect(rect(0, 0, in->getScreenSize().x, in->getScreenSize().y));
+	background.setRect(rectf(0, 0, in->getScreenSize().x, in->getScreenSize().y));
 	background.load();
 
 	GUIverticalalign verticalalign;
 	verticalalign.setParent(&background);
-	verticalalign.setRect(rect(79, 75, 48, 40));
+	verticalalign.setRect(rectf(79, 75, 48, 40));
 	verticalalign.setAlign(GUIelement::ALIGN::NONE, GUIelement::ALIGN::NONE);
 	verticalalign.load();
 
 	GUIbutton restart = loadButton("restart");
 	restart.setParent(&verticalalign);
-	restart.setRect(rect(0, 0, 48, 18));
+	restart.setRect(rectf(0, 0, 48, 18));
 	restart.setText(&roommanager->fonts["font"], "restart");
 	restart.load();
 
 	GUIbutton menu = loadButton("menu");
 	menu.setParent(&verticalalign);
-	menu.setRect(rect(0, 0, 48, 18));
+	menu.setRect(rectf(0, 0, 48, 18));
 	menu.setText(&roommanager->fonts["font"], "menu");
 	menu.load();
 

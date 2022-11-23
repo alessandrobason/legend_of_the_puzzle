@@ -73,7 +73,7 @@ void Enemy::update(float dt) {
 		break;
 	case states::ATTACK:
 		vec2 p = roommanager->getPlayer()->getCenter() - getCenter();
-		angletoplayer = (UsefulFunc::atan2(p.y, p.x) * 180 / M_PI + 180);
+		angletoplayer = (UsefulFunc::atan2(p.y, p.x) * 180 / (float)M_PI + 180);
 		vel = UsefulFunc::normalize(p);
 		if (vel.x <= -0.7)		last_direction = LEFT;
 		else if (vel.x >= 0.7)	last_direction = RIGHT;

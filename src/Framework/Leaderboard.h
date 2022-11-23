@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-// #include <SFML/Network.hpp>
+#include <SFML/Network.hpp>
 #include "..\JSONparser\JSONparser.h"
 
 

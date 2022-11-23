@@ -21,7 +21,7 @@ MainScreen::MainScreen(sf::RenderWindow* window, InputHandler* input, RoomManage
 
 	GUIpanel mainbackground;
 	mainbackground.setTexture(&roommanager->textures["titlescreen"]);
-	mainbackground.setRect(rect(0, 0, in->getScreenSize().x, in->getScreenSize().y));
+	mainbackground.setRect(rectf(0, 0, in->getScreenSize().x, in->getScreenSize().y));
 	mainbackground.load();
 
 	GUIbutton button;
@@ -33,7 +33,7 @@ MainScreen::MainScreen(sf::RenderWindow* window, InputHandler* input, RoomManage
 	button.setNormalTexture(&roommanager->textures["guibutton"]);
 	button.setHoverTexture(&roommanager->textures["guibuttonhover"]);
 	button.setPressedTexture(&roommanager->textures["guibuttonpressed"]);
-	button.setRect(rect(0, 0, 64, 24));
+	button.setRect(rectf(0, 0, 64, 24));
 	button.setTileSize(8);
 	button.setText(&roommanager->fonts["font"], "start");
 	button.setCallback(this);

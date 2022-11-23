@@ -39,7 +39,7 @@ public:
 	bool isfinished() { return finished; }
 
 	T interpolate() {
-		return initalvalue * (1 - percentagepassed) + finalvalue * percentagepassed;
+		return (T)(initalvalue * (1 - percentagepassed) + finalvalue * percentagepassed);
 	}
 
 	static T finterpolate(const T i, const T f, const T t) {

@@ -4,4 +4,6 @@
 
 struct OptionsScreen : public Node {
     using Node::Node;
+
+    virtual void init() override;
 };

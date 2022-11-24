@@ -171,6 +171,11 @@ struct mat4 {
     operator Matrix() const { return rl_mat; }
 };
 
+template<typename T>
+T clamp(const T &value, const T &from, const T &to) {
+    return std::min(std::max(value, from), to);
+}
+
 using vec2  = TVec2<float>;
 using vec2d = TVec2<double>;
 using vec2u = TVec2<unsigned int>;

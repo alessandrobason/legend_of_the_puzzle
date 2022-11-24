@@ -18,6 +18,7 @@ add_executable(LOTP
 
     src/screens/main_menu.cc
     src/screens/controls_screen.cc
+    src/screens/options_screen.cc
 
     src/tracelog.c
 )

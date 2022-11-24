@@ -23,8 +23,11 @@ struct Root : public Node {
     using Node::Node;
     
     void update() override {
+        if (tran_state != TranState::None) {
+            updateTransition();
+            return;
+        }
         Node::update();
-        updateTransition();
     }
 
     void draw() override {
@@ -50,10 +53,6 @@ struct Root : public Node {
     }
 
     void updateTransition() {
-        if (tran_state == TranState::None) {
-            return;
-        }
-
         if (tran_timer.update()) {
             switch (tran_state) {
             case TranState::Starting: 
@@ -77,10 +76,11 @@ struct Root : public Node {
 
         vec2 res = sys::resolution;
         float start = 0.f, end = 0.f;
+        const float halfway = res.y / 2.f + 10.f;
 
         switch (tran_state) {
-        case TranState::Starting:  end = res.y / 2.f; break;
-        case TranState::Finishing: start = res.y / 2.f; break;
+        case TranState::Starting:  end = halfway; break;
+        case TranState::Finishing: start = halfway; break;
         }
 
         float size = lerp(start, end, tran_timer.normalised());
@@ -127,7 +127,7 @@ namespace sys {
         root.addSubnode(new ControlsScreen(true));
         root.addSubnode(new LeaderBoardScreen(true));
 
-        root.setScreen(Screen::Controls);
+        root.setScreen(Screen::Main);
         
         root.init();
     }

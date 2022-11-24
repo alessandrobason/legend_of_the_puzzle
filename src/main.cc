@@ -18,7 +18,7 @@ int main() {
 
     while (sys::isRunning()) {
         sys::update();
-
+ 
         BeginDrawing();
             ClearBackground(RAYWHITE);
             BeginMode2D(sys::camera);
